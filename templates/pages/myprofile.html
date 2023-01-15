@@ -1,0 +1,64 @@
+
+{% extends "pages/base2.html" %}
+{% block title %}main page{% endblock %}
+{% block body %}
+
+
+
+    <!-- MAIN PAGE -->
+    <div class="accountsec">
+        
+        <div class="setinfo">
+         <div class="acctt">
+             <p>My Profile</p>
+           </div>
+       
+             <label for="fname">First name</label> 
+             <input readonly  id="fname" name="fname" type="text" value="{{ first_name }}" />
+ 
+             <label for="lname">Last name</label> 
+             <input readonly  id="lname" name="lname" type="text"  value="{{ last_name }}" />
+ 
+             <label for="emailadd">Email Address</label> 
+             <input  readonly  id="emailadd" name="emailadd" type="text" value="{{ email }}" />
+             
+             <label for="phonenum">Phone Number</label> 
+             <input readonly  id="phonenum" name="phonenum" type="text" value="{{ phone }}" />
+             
+            
+         </div>
+      
+      <div class="setcont">
+         <img id="pageicon" src="static\img\blur.png" width="100px">
+         
+         <div class="setlist">
+             <ul class="setword">
+                 <i class="fa-regular fa-user" id="profileicon"></i> <a href="{{url_for('myprofile') }}">Profile </a>
+             </ul>
+        
+         </div>
+ 
+         <div class="setlist">
+             <ul class="setword">                    
+                 <i class="fa-regular fa-address-book" id="profileicon"></i> <a href="{{url_for('contactlist') }}">Contact List</a>
+             </ul>
+         </div>
+
+         <div class="setlist">
+         <ul class="setword">
+            <i class="fa-solid fa-camera" id="profileicon"></i> <a href="{{ url_for('cameramenu') }}">Camera list </a>
+         </ul>
+        </div>
+
+ 
+         <div class="setlist">
+           <ul class="setword">
+               <i class="fa-solid fa-right-from-bracket" id="profileicon"></i> <a href="{{ url_for('logout') }}">Logout</a>
+           </ul>
+       </div>
+      </div>
+     </div>
+
+
+
+     {% endblock body %}

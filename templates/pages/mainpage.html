@@ -1,0 +1,57 @@
+{% extends "pages/base2.html" %}
+{% block title %}main page{% endblock %}
+{% block body %}
+
+
+
+
+<!-- Main Body -->
+<div class="accountsec">
+  <img id="cameradiv" src="{{ url_for('video_feed') }}" width="100%"> 
+<div class="wrap3">
+  <form class="RecForm" method="POST" action="{{url_for('tasks')}}">
+  <button type="submit" name="rec" value="Start/Stop Recording" class="button22"><i class="fa-solid fa-video" id="recbut"></i></button>
+  </form>
+</div>
+</div>
+
+
+{% endblock body %}
+
+<!-- 
+<div class="accountsec">
+  <img id="cameradiv" src="{{ url_for('video_feed') }}" width="100%"> 
+  <div class="wrap3">
+    <form class="RecForm" method="POST" action="{{url_for('tasks')}}">
+      <input type="hidden" name="rec" value="Start Recording" id="rec">
+      <button type="submit" class="button22 start-button" onclick="startRecording()"><i class="fa-solid fa-video"></i>Start Recording</button>
+      <button type="submit" class="button22 stop-button" onclick="stopRecording()" style="display: none;"><i class="fa-solid fa-video"></i>Stop Recording</button>
+    </form>
+  </div>
+</div>
+<script> 
+
+function startRecording() {
+  document.getElementById("rec").value = "Start Recording";
+    document.getElementsByClassName("start-button")[0].style.display = "none";
+    document.getElementsByClassName("stop-button")[0].style.display = "block";
+    document.getElementById("rec_form").submit();
+    return false;
+}
+
+function stopRecording() {
+  document.getElementById("rec").value = "Stop Recording";
+    document.getElementsByClassName("start-button")[0].style.display = "block";
+    document.getElementsByClassName("stop-button")[0].style.display = "none";
+    document.getElementById("rec_form").submit();
+    return false;
+}
+
+</script> -->
+
+
+
+
+
+
+<!--FOOTER-->

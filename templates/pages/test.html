@@ -1,0 +1,225 @@
+
+{% extends "pages/base2.html" %}
+{% block title %}contactlist{% endblock %}
+{% block body %}
+
+
+
+
+  <div class="accountsec">
+    <div class="setinfo">
+        <div class="container">
+            <div class="row">
+                <div class="col md-12">
+        
+                    <div class="jumbotron p-3">
+                        <h2>Manage <b>Contacts</b> <button type="button" class="btn btn-success float-right"
+                            data-toggle="modal" data-target="#mymodal">Add New Contacts </button></h2>
+        
+        
+                            <!--Adding the flash messages -->
+                            {% with messages = get_flashed_messages() %}
+        
+                            {% if messages %}
+        
+                            {% for message in messages %}
+        
+                                <div class="alert alert-success alert-dismissable" role="alert">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="close">
+        
+                                        <span aria-hidden="true">x</span>
+        
+                                    </button>
+                            {{message}}
+        
+                                </div>
+                            
+                            {% endfor %}
+        
+                            {% endif %}
+                            {% endwith %}
+        
+        
+        
+        
+        
+                        <!--Creating the table-->
+                        <table class="table table-hover table-dark">
+        
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Action</th>
+        
+                            </tr>
+                            
+                            {% for contact in data  %}
+                            <tr>
+                              <td>{{contact.id}}</td>
+                              <td>{{contact.name}}</td>
+                              <td>{{contact.phone}}</td>
+                              <td>
+                                    <a href="/update/{{contact.id}}" class="btn btn-warning btn-xs" data-toggle="modal" data-target="#modaledit{{contact.id}}">Edit</a>
+                                    <a href="/delete/{{contact.id}}" class="btn btn-danger btn-xs" onclick="return confirm('Are You Sure To Delete?')">Delete</a>
+                                </td>
+                                
+        
+        
+        
+        
+                            </tr>
+        
+        
+        
+        
+                            <!--Modal Edit Employee-->
+            <div id="modaledit{{contact.id}}" class="modal fade" role="dialog">
+        
+                <div class="modal-dialog">
+        
+                    <div class="modal-content">
+        
+                        <div class="modal-header">
+        
+                            <h4 class="modal-title">Update Information</h4>
+        
+                            </div>
+                        
+        
+                            <div class="modal-body">
+                                <form action="{{url_for('update')}}" method="POST">
+                                    <div class="form-group">
+                            
+                                        <label>Name:</label>
+                                        <input type="hidden" name="id" value="contact.id">
+                                        <input type="text" class="form-control" name="name" value="{{contact.name}}">
+                                    </div>
+        
+                                    
+        
+                                    <div class="form-group">
+                                        <label>Phone:</label>
+                                        <input type="text" class="form-control" name="phone" value="{{contact.phone}}">
+                                    </div>
+                                
+        
+                                    <div class="form-group">
+                                        <button class="btn btn-primary" type="submit">Update</button>
+                                    </div>
+                            
+        
+                                </form>
+                            
+                            </div>
+        
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+                {% endfor%}
+            </table>
+        </div>
+        
+        
+        
+        
+        
+        <!--Model Add employee-->
+        
+        <div id="mymodal" class="modal fade" role="dialog">
+        
+            <div class="modal-dialog">
+        
+                <div class="modal-content">
+        
+                    <div class="modal-header">
+        
+                        <h4 class="modal-title">Add Employee</h4>
+                    </div>
+        
+        
+                    <div class="modal-body">
+        
+                        <form action="{{url_for('insert')}}" method="POST">
+                            <div class="form-group">
+        
+                                <label>Name:</label>
+                                <input type="text" class="form-control" name="name" required="1">
+                            </div>
+        
+        
+                           
+        
+                            <div class="form-group">
+        
+                                <label>Phone:</label>
+                                <input type="number" class="form-control" name="phone" required="1">
+                            </div>
+        
+        
+                            <div class="form-group">
+        
+                                <button class="btn btn-primary" type="submit">Add Employee</button>
+                                
+                            </div>
+        
+                        </form>
+                    </div>
+        
+                    <div class="modal-footer">
+        
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        
+                    </div>
+        
+                </div>
+            </div>
+        </div>
+        
+        
+        </div>
+    
+        </div>
+        
+
+
+
+
+
+
+      <!--end modal for add contact-->
+    </div>
+
+
+    <div class="setcont">
+      <img id="pageicon" src="static\img\blur.png" width="100px">
+
+      <div class="setlist">
+        <ul class="setword">
+          <i class="fa-regular fa-user" id="profileicon"></i> <a href="{{url_for('myprofile') }}">Profile </a>
+        </ul>
+
+      </div>
+
+      <div class="setlist">
+        <ul class="setword">
+          <i class="fa-regular fa-address-book" id="profileicon"></i> <a href="{{url_for('contactlist') }}">Contact List</a>
+        </ul>
+      </div>
+
+      <div class="setlist">
+        <ul class="setword">
+          <i class="fa-solid fa-right-from-bracket" id="profileicon"></i> <a href="#">Logout</a>
+        </ul>
+      </div>
+
+    </div>
+    <script src="static\js\main.js"></script>
+  </div>
+
+  {% endblock body %}

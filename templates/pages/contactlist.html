@@ -1,0 +1,134 @@
+{% extends "pages/base2.html" %}
+{% block title %} Home {% endblock %}
+{% block body %}
+<head> <script>
+    function addPlusSign(input) {
+      if (input.value.startsWith('966')) {
+        input.value = '+' + input.value;
+      }
+    }
+    </script></head>
+<div class="accountsec">
+    <div class="setinfo">
+       
+     <div class="acctt">
+         <p>Contact List</p>
+          <div class="addcontbtn">
+            <button type="button" id="btnct" class="btn btn-success float-right" 
+            data-toggle="modal" data-target="#mymodal">Add New Contact </button>
+          </div>
+     </div>    
+         <!--Adding the flash messages -->
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            {% for message in messages %}
+ 
+     <div class="alert alert-success alert-dismissable" id="conalert" role="alert">
+         <button type="button" class="close" data-dismiss="alert" aria-label="close">
+           <span aria-hidden="true">x</span>
+         </button>
+            {{message}}
+     </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+            
+    <!--Creating the table-->
+
+     <table class="table table-hover table-light" id="myTable" >
+         <tr>
+             <th>ID</th>
+             <th>Name</th>
+             <th>Phone</th>
+             <th id="actionth">Action</th>
+         </tr>          
+                     {% for contact in data  %}
+         <tr>
+             <td>{{contact.id}}</td>
+             <td>{{contact.name}}</td>
+             <td>{{contact.phone}}</td>
+             <td>
+                 <a href="/delete/{{contact.id}}" class="btn btn-danger btn-xs" id="deletebtn"onclick="return confirm('Are You Sure To Delete?')">Delete</a>
+             </td>
+         </tr>
+          {% endfor%}
+     </table>
+
+ <!--Model Add employee-->
+ <div id="mymodal" class="modal fade" role="dialog">
+     <div class="modal-dialog">
+         <div class="modal-content">
+             <div class="modal-header">
+                 <h4 class="modal-title">Add Contact</h4>
+             </div>
+ 
+             <div class="modal-body">
+                 <form action="{{url_for('insert')}}" method="POST">
+                     <div class="form-group">
+                         <label>Name:</label>
+                         <input type="text" class="form-control" name="name" 
+                         placeholder="Enter name" autofocus pattern="[a-zA-Z]*" required>
+                     </div>
+
+                     <div class="form-group">
+                         <label>Phone:</label>
+                         <input type="text" class="form-control" name="phone"  placeholder="966*********"
+                           pattern="^966\d{9}$"   required>
+                          
+                           
+
+                     </div>
+ 
+                     <div class="form-group">
+                         <button  class="btn btn-primary" type="submit">Add Contact</button>
+                     </div>
+                 </form>
+             </div>
+ 
+             <div class="modal-footer">
+                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+             </div>  
+         </div>
+     </div>
+ </div>
+</div>
+  
+  <div class="setcont">
+     <img id="pageicon" src="static\img\blur.png" width="100px">
+     
+     <div class="setlist">
+         <ul class="setword">
+             <i class="fa-regular fa-user" id="profileicon"></i> <a href="#">Profile </a>
+         </ul>
+    
+     </div>
+
+     <div class="setlist">
+         <ul class="setword">
+             <i class="fa-regular fa-address-book" id="profileicon"></i> <a href="{{ url_for('contactlist') }}">Contact List</a>
+         </ul>
+     </div>
+     <div class="setlist">
+        <ul class="setword">
+           <i class="fa-solid fa-camera" id="profileicon"></i> <a href="{{ url_for('cameramenu') }}">Camera list </a>
+        </ul>
+       </div>
+
+
+
+
+     <div class="setlist">
+       <ul class="setword">
+           <i class="fa-solid fa-right-from-bracket" id="profileicon"></i> <a href="{{ url_for('logout') }}">Logout</a>
+       </ul>
+   </div>
+
+
+
+
+  </div>
+ </div>
+
+
+
+{% endblock %}

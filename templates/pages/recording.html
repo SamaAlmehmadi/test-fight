@@ -1,0 +1,29 @@
+{% extends "pages/base2.html" %} {% block title %}main page{% endblock %} {%
+block body %}
+
+<div class="accountsec">
+  <div class="whole">
+    <div class="acctt">
+      <p class="title">Recordings</p>
+      <div class="recdiv">
+        <span>Video</span>
+        <span>File</span>
+        <span>Date</span>
+      </div>
+      {% for video in videos %}
+      <div class="viddiv">
+        <video autoplay="autoplay" controls="controls" preload="preload">
+          <source
+            class="vidfootage"
+            src=""
+          />
+        </video>
+        <span>{{ video.name }}</span>
+        <span>{Test</span>
+      </div>
+      {% endfor %}
+   
+    </div>
+  </div>
+</div>
+{% endblock body %}

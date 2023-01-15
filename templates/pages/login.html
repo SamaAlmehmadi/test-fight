@@ -1,0 +1,49 @@
+{% extends "pages/base.html" %}
+
+{% block body %}
+
+<title>Login</title>
+
+
+<!-- Main Body -->
+<main>
+  <div id="BodydiV">
+    <img src="static\img\greygrad.png" width="100%" alt="">
+    <form method="post" id="logsig" action="{{ url_for('login') }}">
+      <div class="title">Login Here</div>
+
+      <label for="email">Email Address</label>
+      <input type="email" placeholder="Email Address" id="email" name="email" value="{{ request.form.email }}" required>
+
+      <label for="password">Password</label>
+      <input type="password" placeholder="Password" id="password" name="password" value="{{ request.form.password }}" required>
+      <br>
+      <br>
+      <div class="button">
+        <input type="submit" value="Log In" href="{{ url_for('mainpage') }}">
+      </div>
+      <div class="signuppop">
+        <span class="accountl">Don’t have an account? </span><a href="{{ url_for('signup') }}" class="signup"> Sign
+          Up</a>
+      </div>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages  %}
+      {% for category, message in messages %}
+      
+      <!-- <script>
+        alert('{{ message }}');
+      </script> -->
+      <P style="color: rgb(246, 255, 0);" >
+        {{ message }}
+      <P>
+      
+      {% endfor %}
+      {% endif %}
+      {% endwith %}
+      </div>
+      
+    </form>
+  </div>
+</main>
+
+{% endblock body %}

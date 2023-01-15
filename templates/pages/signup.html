@@ -1,0 +1,96 @@
+
+{% extends "pages/base.html" %}
+{% block title %}signup{% endblock %}
+{% block body %}
+
+
+
+    <!-- Main Body -->
+    <main>
+    
+        <div id="BodydiV">
+          <img src="static\img\greygrad.png" width="100%"   alt="">
+
+         
+            <div class="content">
+              
+
+                <form name="myForm" action="{{ url_for('signup') }}" id="logsig" onsubmit= "return ValidForm()"  method="post" >
+                    <div class="title">Registration</div>
+                    
+                    <div class="user-details">
+                    
+                      <div class="input-box">
+                         <!-- First name -->
+                        <span class="details">First Name</span>
+                        <input type="text" placeholder="Enter your first name" id= "firstName"
+                         name="first_name" value="{{ request.form.first_name }}"
+                          autofocus pattern="[a-zA-Z]*" required  > 
+
+                      </div>
+                      <div class="input-box">
+                        <span class="details">Last Name</span>
+                        <input type="text" placeholder="Enter your last name " id= "last_name"
+                         name="last_name" autofocus pattern="[a-zA-Z]*" required
+                        value="{{ request.form.last_name }}"
+                        
+                        >
+                      </div>
+                      <div class="input-box">
+                        <span class="details">Email</span>
+                        <input type="email" placeholder="name@domain.com" 
+                         name="email" id ="email"  required
+                        value="{{ request.form.email }}">
+                      
+                      </div>
+                      <div class="input-box">
+                        <span class="details">Phone Number</span>
+                        <input type="tel" placeholder="05********" name="phone" id= "phone" 
+                         pattern="05\d{8}" required
+                        value="{{ request.form.phone}}">
+                       
+                      </div>
+                      
+                      <div class="input-box">
+                        <span class="details">Password</span>
+                        <input type="password" name = "password" placeholder="Enter your password" 
+                        id = "password" pattern="/^[a-zA-Z0-9!@#\$%\^\&*_=+-]{8,12}$/g" 
+                        value="{{ request.form.password }}" required>
+                      </div>
+                      <div class="input-box">
+                        <span class="details">Confirm Password</span>
+                        <input type="password" name="confirm_password" 
+                        placeholder="Confirm your password" id="confirm_password" 
+                        pattern="/^[a-zA-Z0-9!@#\$%\^\&*_=+-]{8,12}$/g" required
+                        value="{{ request.form.confirm }}"
+                        >
+                      </div>
+
+                      {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages  %}
+                    {% for category, message in messages %}
+                    
+                    <!-- <script>
+                      alert('{{ message }}');
+                    </script> -->
+                    <P style="color: rgb(246, 255, 0);" >
+                      {{ message }}
+                    <P>
+                    
+                    {% endfor %}
+                    {% endif %}
+                    {% endwith %}
+                    </div>
+        
+                    <div class="button">
+                      <input type="submit" value="Register" href="templates\pages\mainpage.html">
+                    </div>
+                    <div class="signuppop">
+                        <span class="accountl">Already have an Account? </span><a href="{{ url_for('login') }}" class="signup"> Login</a>
+                    </div>
+                  </form>
+                
+            </div>
+        </div>
+    </main>
+    {% endblock body %}

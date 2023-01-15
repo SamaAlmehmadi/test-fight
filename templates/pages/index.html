@@ -1,0 +1,76 @@
+
+{% extends "pages/base.html" %}
+
+{% block body %}
+    <!-- body of Page  -->
+    <main>
+      <div id="BodydiV">
+        <img src="static/img/transparent.png" width="100%"   alt="">
+      </div>
+
+      <div id="second_body">  
+        <div id="rightdiv">
+            <img id="imgofcam" src="static\img\cams.png" alt="">
+        </div>
+
+        <!-- TEXT about website -->
+        <div id="leftDiv">
+                <br>
+                <br>
+                <h1 id="Aboutweb_title">What is AstroX?</h1>
+                <br>
+                <br>
+                <p class="fontstyle1">AstorX is an application that will provide an intelligent fight detection system that will alert the user of any violent and aggressive actions that could occur, using a surveillance camera that is linked to the website. Our system will use computer vision and deep learning technologies to detect any fights. Our main goal is to maintain pubic safety and to minimize the attacks as well as the response time for authorities to assist. Our system will target public spaces such as schools, universities, prisons and malls.</p>
+        </div>
+      </div>
+    </main>
+
+
+<div id="blook2">
+<section class="features_section">
+  <div class="features_top">
+    <h1 class = "title2"> Our Key Features </h1>
+    <h4 class = "subtitle2" > Features to maintain public safety and to minimize violent behaviors</h4>
+
+    <div class="wrapper">
+    <div class="divider div-transparent"></div>
+    </div>
+</div>  
+  
+  <div class="features_container">
+    <div class="feature_item">
+        <i class="feature1"><img src="static\img\detection (1).png" width="50px" height="50px"></i>
+        <div class="featureitem_info">
+          <h4>Violence and Fight Detection</h4>
+          <p class = "suptitle3 " > Intelligent violence and fight detection helps ensure personal and punlic safety</p>
+        </div>
+    </div>
+
+    <div class="feature_item">
+        <i class="feature1"><img src="static\img\live.png" width="50px" height="50px"></i>
+        <div class="featureitem_info">
+          <h4>Live Streaming</h4>
+          <p>24/7 live video streaming</p>
+        </div>
+    </div>
+
+    <div class="feature_item">
+        <i class="feature1"><img src="static\img\time-check.png" width="50px" height="50px"></i>
+        <div class="featureitem_info">
+          <h4>Real-time Alerts</h4>
+          <p>Get real-time alerts, no false alarms with smart fight detection.</p>
+        </div>
+    </div>
+
+    <div class="feature_item">
+        <i class="feature1"><img src="static\img\video.png" width="50px" height="50px"></i>
+        <div class="featureitem_info">
+          <h4>Video Recordings</h4>
+          <p>Automatic video recoding of the violent incident for future access and review.</p>
+        </div>
+    </div>
+  </div>
+</section>
+</div>
+
+{% endblock body %}

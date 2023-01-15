@@ -1,0 +1,163 @@
+<title>{% block title %}{% endblock %}</title>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="static\css\style2.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
+    crossorigin="anonymous"
+    src="static/js/valid.js" type="text/javascript"
+    
+    
+    ></script>
+
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital@0;1&display=swap" rel="stylesheet">
+
+  <!-- MDB -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/5.0.0/mdb.min.css" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
+
+  
+  <title>Home</title>
+</head>
+
+<body>
+
+  <!-- Nav bar  -->
+  <section>
+    <nav class="navbar navbar-expand-lg text-bg-dark">
+      <div class="container-fluid">
+        <a id="fontOFlogo" class="navbar-brand" href="" style="color: aliceblue"><img id="logoimg"
+            src="static\img\logowhite.png" width="40px" alt=""></a>
+        <a class="navbar-brand" href="/" style="color: aliceblue">
+          <img id="img1log" src="static\img\Untitled 5.png"
+            width="100px" alt=""></a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!--  <i class="bi bi-chat-left-dots"></i><img src="static\img\uRCAR.png" width="70px" alt="">-->
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a id="fontOFlogo" class="nav-link active" aria-current="page" href="" style="color: aliceblue"></a>
+            <li class="nav-item"></li>
+          </ul>
+
+          <div class="d-flex align-items-center">
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('logout') }}" class="registerbtn">Logout</a>
+            {% else %}
+            <button type="button" class="loginbtn"> <a href="{{ url_for('login') }}">Login</a></button>
+            <button type="button" class="registerbtn"><a href="{{ url_for('signup') }}">Register</a></button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </nav>
+
+  </section>
+  <!-- End of header  -->
+
+  <body>
+
+
+
+  {% block body %}
+         
+ 
+    {% endblock body %}
+
+  </body>
+
+
+
+
+
+
+  <!--FOOTER-->
+  <div class="footerloc">
+    <footer class="footer">
+      <div class="footer__addr">
+        <img class="footerimg" src="static\img\Untitled 5.png" width=60px>
+        <img class="footerlogo" src="static\img\logowhite.png" width=150px>
+      </div>
+      <address>
+        5534 Jeddah, Saudi Arabia<br>
+      </address>
+
+      <ul class="footer__nav">
+        <li class="nav__item">
+          <h2 class="nav__title"><strong>Contact Us</strong></h2>
+
+          <ul class="nav__ul">
+            <li>
+              <a><strong>Email:</strong> 0126633@uj.edu.sa</a>
+            </li>
+
+            <li>
+              <a><strong>Phone:</strong> 0555511000</a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="nav__item nav__item--extra">
+          <h2 class="nav__title"><strong>Technology</strong></h2>
+
+          <ul class="nav__ul nav__ul--extra">
+            <li>
+              <a href="#">Computer Vision</a>
+            </li>
+
+            <li>
+              <a href="#">Deep Learning</a>
+            </li>
+
+            <li>
+              <a href="#">Machine Learning</a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="nav__item">
+          <h2 class="nav__title"><strong>Legal</strong></h2>
+
+          <ul class="nav__ul">
+            <li>
+              <a href="#">Privacy Policy</a>
+            </li>
+
+            <li>
+              <a href="#">Terms of Use</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+
+      <div class="legal">
+        <p>&copy; Copyright <strong><span>AstorX team</span></strong>. All Rights Reserved</p>
+      </div>
+    </footer>
+  </div>
+
+</body>
+
+</html>
