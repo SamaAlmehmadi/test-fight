@@ -37,7 +37,7 @@
   <!-- for add button sama-->
 
 
-I create notifications icon to display the alert massage and time like this 
+
 </head>
 
 <body class="mainpage">
@@ -47,27 +47,46 @@ I create notifications icon to display the alert massage and time like this
          <img id="logoimg" src="static\img\logowhite.png" width="40px">
         </a>
         <ul>
-              <!-- Add the notification icon here -->
-              <li id="notification-icon" >
-                <i class="fa-solid fa-bell"></i>
-                <span id="notification-message"></span>
-            </li>
+
+    
+        
+      </li>
+      
             <li><a href="{{ url_for('mainpage') }}">Home</a></li>
             <li><a href="{{ url_for('recording') }}">Recordings</a></li>
             
-    
+            <!-- Example single danger button -->
+      <div class="btn-group">
+        <li class="item">
+            <i  aria-hidden="true"></i> <span class="btn__badge pulse-button ">!</span> 
+        <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Warning!
+        </button>
+        
+        <div class="dropdown-menu">
+          {% for notification in data %}
+          <a class="dropdown-item" href="#">{{notification.massage}}</a>
+          
+          {% endfor %}
+        </div>
+      
+      </div>
             <li><a href="{{ url_for('myprofile') }}" > <i class="fa-solid fa-gear" id="iconz" ></i> </a>
             
-        
+          
                   
         </ul>
     </nav>
+
+
+ 
+    
+   
     <div class="banneridk">
 
+  
 
-    I want from you to display a notification message with time in the notification icon as drop down when the 
-    user clicks rec ,
-   <script>
+   <script >
           window.onscroll = () => {
             var nav  = document.querySelector('nav');
             
@@ -78,6 +97,9 @@ I create notifications icon to display the alert massage and time like this
                 nav.classList.remove("sticky");
             }
         }
+
+
+
      </script>
     </div>
 

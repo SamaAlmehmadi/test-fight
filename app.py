@@ -22,6 +22,7 @@ from flask import (
 
 from flask_sqlalchemy import SQLAlchemy
 from psycopg2 import DataError
+from sqlalchemy import desc
 from form import sign_up_form, LoginForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
@@ -178,11 +179,6 @@ def login():
 
 
 
-@app.route('/mainpage', methods=['GET', 'POST'])
-@login_required
-def mainpage():
- 
-  return render_template('pages/mainpage.html')
 
 #Getting the Camera frames
 
@@ -195,7 +191,7 @@ def gen_frames():
     while True:
         success, img = camera.read()
         
-        if not success:
+        if not success and not rec:
             break
         
         if capture:
@@ -261,6 +257,11 @@ class TimerClass(threading.Thread):
 
 import mimetypes
 
+@app.route('/mainpage', methods=['GET', 'POST'])
+@login_required
+def mainpage():
+  data = Notification.query.order_by(desc(Notification.date_time)).all()
+  return render_template('pages/mainpage.html',data=data)
 
 
 
@@ -284,13 +285,14 @@ def tasks():
     
             tmr = TimerClass()
             
-    
             if rec:
                 print("start")
                 tmr.start()
+              
             else:
                 print("stop")
                 tmr.stop()
+               
                 send_email(email_addresses)
                 print ("Message was sent")
                 upload_file()
@@ -325,13 +327,21 @@ def send_email(email_addresses):
 
 
 
-# @app.route('/get_notifications' , methods=['GET'])
+# Route to retrieve previous notifications
+# @app.route('/notifications', methods=['GET'])
 # def get_notifications():
 #     notifications = Notification.query.all()
 #     return jsonify([notification.to_dict() for notification in notifications])
 
 
 
+@app.route('/notifcation' , methods=['GET'])
+def notifcation():
+   
+     data = Notification.query.order_by(desc(Notification.date_time)).all()
+     print(f'data: {data}')
+
+     return render_template('pages/base2.html' , data = data)
 
 
 
@@ -502,6 +512,9 @@ def cameramenu():
      print(f'data: {data}')
 
      return render_template('pages/cameramenu.html' , data = data)
+
+
+
 
 
 
