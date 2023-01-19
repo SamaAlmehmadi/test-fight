@@ -35,6 +35,9 @@
 
   
   <!-- for add button sama-->
+
+
+I create notifications icon to display the alert massage and time like this 
 </head>
 
 <body class="mainpage">
@@ -44,16 +47,26 @@
          <img id="logoimg" src="static\img\logowhite.png" width="40px">
         </a>
         <ul>
+              <!-- Add the notification icon here -->
+              <li id="notification-icon" >
+                <i class="fa-solid fa-bell"></i>
+                <span id="notification-message"></span>
+            </li>
             <li><a href="{{ url_for('mainpage') }}">Home</a></li>
             <li><a href="{{ url_for('recording') }}">Recordings</a></li>
+            
+    
             <li><a href="{{ url_for('myprofile') }}" > <i class="fa-solid fa-gear" id="iconz" ></i> </a>
             
-           
-
+        
                   
         </ul>
     </nav>
     <div class="banneridk">
+
+
+    I want from you to display a notification message with time in the notification icon as drop down when the 
+    user clicks rec ,
    <script>
           window.onscroll = () => {
             var nav  = document.querySelector('nav');

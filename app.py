@@ -17,7 +17,8 @@ from flask import (
     url_for,
     abort,
     jsonify,
-    send_file)
+    send_file,
+    send_from_directory)
 
 from flask_sqlalchemy import SQLAlchemy
 from psycopg2 import DataError
@@ -39,6 +40,17 @@ app = Flask(__name__)
 app.config.from_object('config')
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 300
 
+#using google api to send email , this important to send_email() fun 
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = 'astorx.team@gmail.com'
+app.config['MAIL_PASSWORD'] = 'pzxrvxaqipfxojdu'
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+
+
+
+
 
 #Creating the camera variable ,
 #camera = cv2.VideoCapture('rtsp://admin:abrar123@192.168.1.64:554/Streaming/Channels/101')
@@ -55,7 +67,7 @@ os.makedirs('./shots', exist_ok=True)
 #csrf = CSRFProtect(app)
 
 db = SQLAlchemy(app)
-from models import Camera_list, db, Users , Contact, Recording
+from models import Camera_Table, db, Users , Contact, Recording,Notification
 db.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -68,14 +80,6 @@ with app.app_context():
     db.create_all()
 
 
-
-
-
-
-
-
-
-
 @app.after_request
 def after_request(response):
     response.headers.add('Access-Control-Allow-Headers',
@@ -83,9 +87,6 @@ def after_request(response):
     response.headers.add('Access-Control-Allow-Headers',
                          'GET, POST, PATCH, DELETE, OPTION')
     return response
-
-
-
 
 
 
@@ -141,16 +142,10 @@ def signup():
         return render_template('pages/signup.html', form=form)
 
 
-#pic 
-#already email exists
-#password not the same 
-#invalid password
+
 @app.route('/success')
 def success ():
  return render_template('pages/success.html')
-
-
-
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -187,7 +182,6 @@ def login():
 @login_required
 def mainpage():
  
-
   return render_template('pages/mainpage.html')
 
 #Getting the Camera frames
@@ -268,11 +262,16 @@ class TimerClass(threading.Thread):
 import mimetypes
 
 
+
+
+
+
 @app.route('/requests', methods=['POST', 'GET'])
 def tasks():
     global capture
     global rec
-    
+    email_addresses = [contact.email for contact in Contact.query.all()]
+
     print('[DEBUG] click:', request.form.get('click'))
     print('[DEBUG] rec  :', request.form.get('rec'))
     
@@ -284,8 +283,7 @@ def tasks():
             rec = not rec
     
             tmr = TimerClass()
-            #resp=sendSMS()
-            #print (resp)
+            
     
             if rec:
                 print("start")
@@ -293,100 +291,81 @@ def tasks():
             else:
                 print("stop")
                 tmr.stop()
-                path='clips'
-                for filename in os.listdir(path):
-                    if filename.endswith('.avi'):
-                        with open(os.path.join(path,filename),'rb')as file:
-                            video_data = file.read()
-                            mimetype, _ = mimetypes.guess_type(filename)
-                            upload=Recording(filename=filename, data=video_data,mimetype=mimetype)
-                            print(upload)
-                            db.session.add(upload)
-                            db.session.commit()
-                #upload_file()
+                send_email(email_addresses)
+                print ("Message was sent")
+                upload_file()
+                
                 
 
     return render_template('pages/mainpage.html')
 
 
+from flask_mail import Mail, Message
+mail = Mail(app)
+
+
+
+def send_email(email_addresses):
+    now = datetime.datetime.now()
+    camera_details=Camera_Table.query.first()
+    names = [contact.name for contact in Contact.query.all()]
+    # create the message with the email addresses as recipients
+    msg = Message('This is an alert !', sender='astorx.team@gmail.com', recipients=email_addresses)
+    msg.body = "Warring, a fight has occured  Camera Name: {name} , Location: {location} , Time: {time}" \
+    .format(name=camera_details.camera_name , location=camera_details.physical_location, time=(str(now)))
+    mail.send(msg)
+    current_time = datetime.datetime.now().strftime("%I:%M %p")
+    # Create a new Notification object with the message and date/time
+    notification = Notification(massage='Fight happened at '+current_time, date_time=datetime.datetime.now())
+    db.session.add(notification)
+    db.session.commit()
 
 
 
 
 
 
+# @app.route('/get_notifications' , methods=['GET'])
+# def get_notifications():
+#     notifications = Notification.query.all()
+#     return jsonify([notification.to_dict() for notification in notifications])
 
 
 
 
 
-
-from twilio.rest import Client
-
-
-
-# def sendSMSTwiow():
-
-#     account_sid = os.environ['TWILIO_ACCOUNT_SID']
-#     auth_token = os.environ['TWILIO_AUTH_TOKEN']
-#     client = Client(account_sid, auth_token)
-
-#     message = client.messages \
-#                 .create(
-#                      body="Join Earth's mightiest heroes. Like Kevin Bacon.",
-#                      from_='+15017122661',
-#                      to='+15558675310'
-#                  )
-
-
-
-
-
-# def sendSMS():
-#         apikey='NmU2YTU4NjM2YzQxNDY0MzcxNzM2Yzc0MzM3ODczMzE='
-#         numbers='+447706650731'
-#         camera='Camera 1'
-#         Time=str(datetime.now())
-#         Recording='Recording 1'
-#         message='This is an alert from AstorX, a fight has occured.'+ camera + Time + Recording
-#         sender='AstorX'
-#         data =  urllib.parse.urlencode({'apikey': apikey, 'numbers': numbers,
-#         'message' : message, 'sender': sender})
-#         data = data.encode('utf-8')
-#         request = urllib.request.Request("https://api.txtlocal.com/send/?")
-#         f = urllib.request.urlopen(request, data)
-#         fr = f.read()
-#         print(fr)
 
 
 
 @app.route('/recording' , methods=['GET' ,'POST'])
-
-
 def recording():
+    videos = Recording.query.all()
+    return render_template('pages/recording.html' , videos=videos)
 
 
-
-    return render_template('pages/recording.html')
 
 @app.route('/video/<int:video_id>')
 def video(video_id):
-    video = Recording.query.filter_by(id=video_id).first()
+    videos = Recording.query.filter_by(id=video_id).first()
     
-    
-    return render_template('recording.html')
+    return send_from_directory(directory='clips',filename=videos.name, as_attachment=True)
 
-@app.route('/upload',methods=['GET','POST'])
+
+#save recording vieso into database
+@app.route('/upload/',methods=['GET','POST'])
 def upload_file():
-    path='clips'
-    if request.method=='POST':
-        file=request.files['file']
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config[path,filename],filename))
-        newdata=Recording(name=filename)
-        db.session.add(newdata)
-        db.session.commit()
-    return redirect(url_for('play'))
+     path='clips'
+     for filename in os.listdir(path):
+        if filename.endswith('.avi'):
+         with open(os.path.join(path,filename),'rb')as file:
+            video_data = file.read()
+            mimetype, _ = mimetypes.guess_type(filename)
+            upload=Recording(name=filename, data=video_data, mimetype=mimetype)
+            print(upload)
+            db.session.add(upload)
+            db.session.commit()
+        
+        return render_template('pages/mainpage.html')
 
 @app.route('/play/<filename>')
 def play(filename):
@@ -450,9 +429,9 @@ def insert():
         else:
             user_id = session['logged_in_user_id']
             name = request.form['name']
-            phone = request.form['phone']
+            email = request.form['email']
          #for test in the termanl , to show the data if save correctly 
-            my_data = Contact(name=name, phone=phone, user_id=user_id)
+            my_data = Contact(name=name, email=email, user_id=user_id)
             
             db.session.add(my_data)
             print(my_data.name)
@@ -519,7 +498,7 @@ def cameramenu():
 
     
      user_id = session['logged_in_user_id']
-     data = Camera_list.query.filter_by(user_id=user_id).all()
+     data = Camera_Table.query.filter_by(user_id=user_id).all()
      print(f'data: {data}')
 
      return render_template('pages/cameramenu.html' , data = data)
@@ -538,7 +517,10 @@ def camera_insert():
             user_id = session['logged_in_user_id']
             camera_name =request.form['camera']
             camera_ip = request.form['IP']
-            my_data = Camera_list(camera_name=camera_name, camera_ip=camera_ip, user_id=user_id)
+            physical_location=request.form['Location']
+            my_data = Camera_Table(camera_name=camera_name,
+             camera_ip=camera_ip,physical_location=physical_location
+              ,user_id=user_id)
                 
             db.session.add(my_data)
             db.session.commit()
@@ -554,7 +536,7 @@ def delete_camera(id):
     # Get the contact and check if the user has permission to delete it
     try:
         id = int(id)
-        data = Camera_list.query.get(id)
+        data = Camera_Table.query.get(id)
         if data.user_id != session['logged_in_user_id']:
             flash('You do not have permission to delete this camera')
             return redirect(url_for('cameramenu'))

@@ -32,6 +32,7 @@
              <th>ID</th>
              <th>Camera Name</th>
              <th>Camera IP</th>
+             <th>Physical Location </th>
              <th id="actionth">Action</th>
          </tr>          
                 {% for camera_list in data  %}
@@ -39,6 +40,7 @@
              <td>{{camera_list.id}}</td>
              <td>{{camera_list.camera_name}}</td>
              <td>{{camera_list.camera_ip}}</td>
+             <td>{{camera_list.physical_location}}</td>
              <td>
                  <a href="/delete_camera/{{camera_list.id}}" class="btn btn-danger btn-xs" id="deletebtn"onclick="return confirm('Are You Sure To Delete?')">Delete</a>
              </td>
@@ -65,6 +67,11 @@
                          <label>Camera IP:</label>
                          <input type="text" class="form-control" name="IP" required="1">
                      </div>
+
+                     <div class="form-group">
+                        <label>Physical Location:</label>
+                        <input type="text" class="form-control" name="Location" required="1">
+                    </div>
  
                      <div class="form-group">
                          <button class="btn btn-primary" type="submit">Add Camera</button>

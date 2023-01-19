@@ -1,3 +1,4 @@
+convert this code insteadOf sedning sms , send email massage 
 <?php
 
  // Your Account SID and Auth Token from twilio.com/console
@@ -32,6 +33,7 @@ if(!empty($_POST['phone'])){
   $phone = $_POST['phone'];
 
   send_twilio_text_sms($sid,$token,'+18507794721',"+$phone",'astorx ');
+
 
 }
 ?>

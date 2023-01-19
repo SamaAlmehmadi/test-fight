@@ -15,30 +15,44 @@ from flask_login import UserMixin
 
 db = SQLAlchemy()
 
-class Recording(db.Model):
-    __tablename__ = 'recordings'
+class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    filename = db.Column(db.String(50))
+    massage = db.Column(db.String(400))
+    date_time = db.Column(db.DateTime)
+
+    def __init__(self,massage ,date_time):
+        self.massage = massage
+        self.date_time = date_time
+       
+
+
+class Recording(db.Model):
+    _tablename_ = 'recording'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50))
     data = db.Column(db.LargeBinary)
     mimetype = db.Column(db.String(255))
+    
 
-    def __init__(self,filename ,data,mimetype):
-        self.filename = filename
-        self.data = data
-        self.mimetype = mimetype
+    def __init__(self,name , data, mimetype):
+        self.name = name
+        self.data=data
+        self.mimetype=mimetype
         
         
-
-class Camera_list(db.Model):
-    __tablename__ = 'camera_list'
+#Camera_Table
+class Camera_Table(db.Model):
+    __tablename__ = 'Camera_Table'
     id = Column(Integer, primary_key=True)
     camera_name = db.Column(db.String(102))
-    camera_ip = db.Column(db.String(30))   
+    camera_ip = db.Column(db.String(30)) 
+    physical_location=db.Column(db.String(50))  
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     
-    def __init__(self,camera_name ,camera_ip ,user_id):
+    def __init__(self,camera_name ,camera_ip,physical_location ,user_id):
         self.camera_name = camera_name
         self.camera_ip = camera_ip
+        self.physical_location=physical_location
         self.user_id = user_id
 
 
@@ -46,13 +60,13 @@ class Camera_list(db.Model):
 class Contact(db.Model):
     __tablename__ = 'contact'
     id = Column(Integer, primary_key=True)
-    phone = db.Column(db.String(16))
+    email = db.Column(db.String(40))
     name = db.Column(db.String(102))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     
-    def __init__(self,name ,phone ,user_id):
+    def __init__(self,name ,email ,user_id):
         self.name = name
-        self.phone = phone
+        self.email = email
         self.user_id = user_id
 
 
