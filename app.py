@@ -29,6 +29,8 @@ from flask_migrate import Migrate
 from flask_login import LoginManager, login_user, login_required, logout_user,current_user
 from io import BytesIO
 from werkzeug.utils import secure_filename
+
+
 # global varaibles for the camera recording 
 capture = False
 rec = False
@@ -179,6 +181,14 @@ def login():
 
 
 
+@app.route('/notifcation' , methods=['GET'])
+def notifcation():
+   
+     data = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
+
+     print(f'data: {data}')
+
+     return render_template('pages/mainpage.html' , data = data)
 
 #Getting the Camera frames
 
@@ -260,7 +270,8 @@ import mimetypes
 @app.route('/mainpage', methods=['GET', 'POST'])
 @login_required
 def mainpage():
-  data = Notification.query.order_by(desc(Notification.date_time)).all()
+  data = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
+
   return render_template('pages/mainpage.html',data=data)
 
 
@@ -291,11 +302,13 @@ def tasks():
               
             else:
                 print("stop")
+                
                 tmr.stop()
-               
+                
                 send_email(email_addresses)
                 print ("Message was sent")
                 upload_file()
+                
                 
                 
 
@@ -310,7 +323,6 @@ mail = Mail(app)
 def send_email(email_addresses):
     now = datetime.datetime.now()
     camera_details=Camera_Table.query.first()
-    names = [contact.name for contact in Contact.query.all()]
     # create the message with the email addresses as recipients
     msg = Message('This is an alert !', sender='astorx.team@gmail.com', recipients=email_addresses)
     msg.body = "Warring, a fight has occured  Camera Name: {name} , Location: {location} , Time: {time}" \
@@ -335,14 +347,6 @@ def send_email(email_addresses):
 
 
 
-@app.route('/notifcation' , methods=['GET'])
-def notifcation():
-   
-     data = Notification.query.order_by(desc(Notification.date_time)).all()
-     print(f'data: {data}')
-
-     return render_template('pages/base2.html' , data = data)
-
 
 
 
@@ -357,8 +361,42 @@ def recording():
 @app.route('/video/<int:video_id>')
 def video(video_id):
     videos = Recording.query.filter_by(id=video_id).first()
+    mega_file = mega.find(video.name)
+    path='clips'
+    mega.download(mega_file[0], path)
+
     
-    return send_from_directory(directory='clips',filename=videos.name, as_attachment=True)
+    return send_from_directory(directory=path, filename=videos.name, as_attachment=False)
+
+@app.route('/download/<int:video_id>')
+def download_video(video_id):
+    video = Recording.query.filter_by(id=video_id).first()
+    file = mega.find(video.name)
+    if isinstance(file, list) and 'h' in file[0]:
+        file_path = mega.download(file[0]['h'])
+        return send_file(file_path, as_attachment=True, attachment_filename=video.name)
+    else:
+        # handle the error
+        return 'File not found', 404
+
+
+from mega import Mega
+import os
+from os import listdir
+from os.path import isfile, join
+
+mega = Mega()
+mega._login_user('astorx.team@gmail.com','Sama3624200')
+def absoluteFilePaths(directory):
+    for dirpath, _, filenames in os.walk(directory):
+        for f in filenames:
+            yield os.path.abspath(os.path.join(dirpath, f))
+
+def upload_to_mega(directory):
+    folder = mega.find('vid')[0]
+    for file_path in absoluteFilePaths(directory):
+        mega.upload(file_path, folder)
+
 
 
 #save recording vieso into database
@@ -367,6 +405,7 @@ def upload_file():
      path='clips'
      for filename in os.listdir(path):
         if filename.endswith('.avi'):
+         upload_to_mega(path)
          with open(os.path.join(path,filename),'rb')as file:
             video_data = file.read()
             mimetype, _ = mimetypes.guess_type(filename)
@@ -374,6 +413,7 @@ def upload_file():
             print(upload)
             db.session.add(upload)
             db.session.commit()
+           
         
         return render_template('pages/mainpage.html')
 

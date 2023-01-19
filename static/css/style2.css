@@ -322,6 +322,7 @@ body {
 
 /**main box for settings and live streaming**/
 .accountsec {
+
   background: #C2C2C2;
   display: block;
   width: 90%;
@@ -332,6 +333,7 @@ body {
   border-radius: 10px;
   justify-content: center;
   align-items: center;
+  
 }
 
 
