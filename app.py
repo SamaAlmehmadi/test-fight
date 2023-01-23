@@ -180,15 +180,14 @@ def login():
 
 
 
+import mimetypes
 
-@app.route('/notifcation' , methods=['GET'])
-def notifcation():
-   
-     data = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
-
-     print(f'data: {data}')
-
-     return render_template('pages/mainpage.html' , data = data)
+@app.route('/mainpage', methods=['GET', 'POST'])
+@login_required
+def mainpage():
+  
+  notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
+  return render_template('pages/mainpage.html',notification=notification)
 
 #Getting the Camera frames
 
@@ -265,14 +264,8 @@ class TimerClass(threading.Thread):
 
 
 
-import mimetypes
 
-@app.route('/mainpage', methods=['GET', 'POST'])
-@login_required
-def mainpage():
-  data = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
 
-  return render_template('pages/mainpage.html',data=data)
 
 
 
@@ -282,6 +275,7 @@ def mainpage():
 def tasks():
     global capture
     global rec
+    notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
     email_addresses = [contact.email for contact in Contact.query.all()]
 
     print('[DEBUG] click:', request.form.get('click'))
@@ -308,11 +302,11 @@ def tasks():
                 send_email(email_addresses)
                 print ("Message was sent")
                 upload_file()
-                
+         
                 
                 
 
-    return render_template('pages/mainpage.html')
+    return render_template('pages/mainpage.html',notification=notification)
 
 
 from flask_mail import Mail, Message
@@ -351,33 +345,11 @@ def send_email(email_addresses):
 
 
 
-@app.route('/recording' , methods=['GET' ,'POST'])
-def recording():
-    videos = Recording.query.all()
-    return render_template('pages/recording.html' , videos=videos)
 
 
 
-@app.route('/video/<int:video_id>')
-def video(video_id):
-    videos = Recording.query.filter_by(id=video_id).first()
-    mega_file = mega.find(video.name)
-    path='clips'
-    mega.download(mega_file[0], path)
 
-    
-    return send_from_directory(directory=path, filename=videos.name, as_attachment=False)
 
-@app.route('/download/<int:video_id>')
-def download_video(video_id):
-    video = Recording.query.filter_by(id=video_id).first()
-    file = mega.find(video.name)
-    if isinstance(file, list) and 'h' in file[0]:
-        file_path = mega.download(file[0]['h'])
-        return send_file(file_path, as_attachment=True, attachment_filename=video.name)
-    else:
-        # handle the error
-        return 'File not found', 404
 
 
 from mega import Mega
@@ -385,8 +357,10 @@ import os
 from os import listdir
 from os.path import isfile, join
 
+
 mega = Mega()
 mega._login_user('astorx.team@gmail.com','Sama3624200')
+
 def absoluteFilePaths(directory):
     for dirpath, _, filenames in os.walk(directory):
         for f in filenames:
@@ -396,6 +370,22 @@ def upload_to_mega(directory):
     folder = mega.find('vid')[0]
     for file_path in absoluteFilePaths(directory):
         mega.upload(file_path, folder)
+
+
+
+
+@app.route('/recording' , methods=['GET' ,'POST'])
+def recording():
+    path='clips'
+    files = os.listdir(path)
+    videos = [file for file in files if file.endswith('.avi')]
+    notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
+
+    return render_template('pages/recording.html' , videos=videos ,notification=notification)
+
+
+
+
 
 
 
@@ -417,18 +407,39 @@ def upload_file():
         
         return render_template('pages/mainpage.html')
 
-@app.route('/play/<filename>')
-def play(filename):
-    file_data=Recording.query.all()
-    l=[]
-    for i in file_data:
-        l.append(i.name)
-        print(i.name)
-    print(l)
-    return render_template('pages/recording.html',filename=filename)
 
 
+# @app.route('/video/<int:video_id>')
+# def video(video_id):
+#     videos = Recording.query.filter_by(id=video_id).first()
+#     if videos:
+#         file = mega.find(videos.name)
+#         if isinstance(file, list) and 'h' in file[0]:
+#             file_path = mega.download(file[0]['h'])
+#             return send_file(file_path, as_attachment=True, attachment_filename=videos.name)
 
+
+from mimetypes import guess_type
+@app.route('/download/<string:video_name>')
+def download_video(video_name):
+    path = 'clips'
+    file_path = os.path.join(path, video_name)
+    try:
+        # check if the file exists
+        if os.path.isfile(file_path):
+            # check the file type
+            mimetype, encoding = guess_type(file_path)
+            if mimetype and mimetype.startswith('video/'):
+                # return the file as a download
+                return send_file(file_path, as_attachment=True, attachment_filename=video_name, mimetype=mimetype)
+            else:
+                # handle the error
+                return 'Invalid file type', 400
+        else:
+            # handle the error
+            return 'File not found', 404
+    except Exception as e:
+        return str(e)
 
 
 
@@ -448,9 +459,9 @@ def myprofile():
        last_name = user.last_name
        email = user.email 
        phone = user.phone
-
+       notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
        return render_template('pages/myprofile.html', first_name=first_name , 
-      last_name=last_name , email=email , phone=phone )
+      last_name=last_name , email=email , phone=phone ,notification=notification )
     
    
 

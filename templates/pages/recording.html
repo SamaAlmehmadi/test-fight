@@ -1,40 +1,32 @@
-{% extends "pages/base2.html" %} {% block title %}main page{% endblock %} {%
-  block body %}
-  
-
-
-
-
-  <div class="accountsec">
+{% extends "pages/base2.html" %} 
+{% block title %}main page{% endblock %} 
+{% block body %}
+  <div class="accountsec" >
     <div class="whole">
       <div class="acctt">
         <p class="title">Recordings</p>
-        <div class="recdiv">
-          <span>Video Name</span>
-          <span>Date</span>
-          <span>Download Link</span>
-        </div>
-
-        {% for video in videos[:2] %}
-        <div class="viddiv">
-          <video controls>
-            <source
-              class="vidfootage"
-              src="{{ url_for('video', video_id=video.id) }}" type="{{ video.mimetype }}"
-            />
-          </video>
-          <span>{{video.Name}}</span>
-          <span>{{video.mimtype}}</span>
-          <span><a href="{{url_for('download_video', video_id=video.id)}}"  download>Download</a>
-        </div>
-
-        </div>
-        {%endfor%}
-
-
-     
-
+      </div>
+      <div class="table-container">
+        <table class ="recdiv1"   id="recid">
+          <thead>
+            <tr>
+              <th>Video Name</th>
+              <th>Date</th>
+              <th>Download Link</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for video in videos %}
+              <tr>
+                <td>{{ video.name }}</td>
+                <td>{{ video.date }}</td>
+                <td><a href="{{ url_for('download_video', video_name=video) }}"  download>Download Video</a>
+                </td>
+              </tr>
+            {%endfor%}
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
-  {% endblock body %}
+{% endblock body %}

@@ -1331,7 +1331,7 @@ video{
 }
 
 .viddiv{
-  position:absolute;
+  position:relative;
   width:92.7%;
   height: 140px;
   display: block;
@@ -1438,3 +1438,28 @@ th{
 
 
 
+.table-container {
+  overflow: scroll;
+  max-height: 800px;
+}
+table {
+  width: 110%;
+  border-collapse: collapse;
+}
+th, td {
+  border: 1px solid black;
+  padding: 4px;
+}
+th {
+  background-color: #f2f2f2;
+}
+
+.recdiv1 {
+  display: block;
+  position: relative;
+  background-color: rgba(255, 255, 255, 0.741);
+  width: 100%;
+  height: 500px;
+  border-radius: 8px;
+  padding-top: 10px;
+}

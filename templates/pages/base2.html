@@ -64,8 +64,8 @@
         </button>
         
         <div class="dropdown-menu">
-          {% for notification in data %}
-          <a class="dropdown-item" href="#">{{notification.massage}}</a>
+          {% for notifications in notification %}
+          <a class="dropdown-item" href="#">{{notifications.massage}}</a>
           
           {% endfor %}
         </div>
