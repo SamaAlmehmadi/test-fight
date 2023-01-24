@@ -8,7 +8,7 @@
   transition: all 0.2s ease;
 }
 
-#cameradiv{
+/* #cameradiv{
   width: 60%;
   height: 90%;
   border-radius: 15px;
@@ -16,6 +16,16 @@
   max-height: 550;
   margin-left:21%;
   margin-top:2%;
+
+} */
+#cameradiv{
+  width: 97%;
+  height: 97%;
+  border-radius: 15px;
+  position: relative;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
 
 }
 
@@ -1380,7 +1390,7 @@ table{
 }
 
 #actionth{
-  padding-left: 45px;
+  padding-left: 20px;
 }
 
 th{
@@ -1439,8 +1449,12 @@ th{
 
 
 .table-container {
-  overflow: scroll;
-  max-height: 800px;
+  overflow: auto;
+  max-height: 69%;
+}
+.contact-container{
+  max-height: 56% !important;
+  background-color: #eee;
 }
 table {
   width: 110%;
@@ -1462,4 +1476,66 @@ th {
   height: 500px;
   border-radius: 8px;
   padding-top: 10px;
+ 
+}
+
+
+.fixed-table-head{
+  width: 100%;
+  display: flex;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  background-color: #eee;
+  padding: 10px;
+}
+.fixed-table-head div{
+  flex: 1;
+  text-align: center;
+  font-size: 18px;
+}
+
+.recTable{
+  table-layout: fixed !important;
+  background-color: #eee;
+  text-align: center;
+}
+.recTable thead{
+  display: none;
+}
+.download-btn{
+  background-color: #6ec0a8 !important;
+  color: #fff !important;
+  border-radius: 10px !important;
+  font-size: 0.80rem !important;
+}
+.download-btn:hover{
+  background: #333 !important;
+}
+.contact-table th,
+.contact-table td,
+.contact-table tr
+{
+  border-radius: 10px !important;
+}
+
+/*---- Scroll Bar ----*/
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #999;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #666;
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }

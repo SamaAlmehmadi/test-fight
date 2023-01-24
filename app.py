@@ -46,8 +46,8 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 300
 #using google api to send email , this important to send_email() fun 
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'astorx.team@gmail.com'
-app.config['MAIL_PASSWORD'] = 'pzxrvxaqipfxojdu'
+app.config['MAIL_USERNAME'] = 'samanaroto3@gmail.com'
+app.config['MAIL_PASSWORD'] = 'ibcrkqdthcqnziwl'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 
@@ -62,6 +62,7 @@ camera=cv2.VideoCapture(0)# if we want to use the device web cam
 frame_width = int(camera.get(3))
 frame_height = int(camera.get(4))
 size = (frame_width, frame_height)
+fps = camera.get(cv2.CAP_PROP_FPS)
 
 #Creating the directory for the videos 
 os.makedirs('./clips', exist_ok=True)
@@ -240,10 +241,10 @@ class TimerClass(threading.Thread):
         
         while rec and not self.event.is_set():
             now = datetime.datetime.now()
-            filename = "vid_{}.avi".format(str(now).replace(":", ''))
+            filename = "vid_{}.mp4".format(str(now).replace(":", ''))
             path = os.path.sep.join(['clips', filename])
-            fourcc = cv2.VideoWriter_fourcc(*'XVID')
-            out = cv2.VideoWriter(path, fourcc, 25.0, size)
+            fourcc = cv2.VideoWriter_fourcc(*'vp80')
+            out = cv2.VideoWriter(path, fourcc, fps, size)
 
             end = now + seconds_10
             
@@ -299,7 +300,7 @@ def tasks():
                 
                 tmr.stop()
                 
-                send_email(email_addresses)
+                #send_email(email_addresses)
                 print ("Message was sent")
                 upload_file()
          
@@ -374,14 +375,14 @@ def upload_to_mega(directory):
 
 
 
-@app.route('/recording' , methods=['GET' ,'POST'])
+@app.route('/recording', methods=['GET', 'POST'])
 def recording():
-    path='clips'
+    path = 'clips'
     files = os.listdir(path)
-    videos = [file for file in files if file.endswith('.avi')]
+    videos = [file for file in files if file.endswith('.mp4')]
     notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
 
-    return render_template('pages/recording.html' , videos=videos ,notification=notification)
+    return render_template('pages/recording.html', videos=videos, notification=notification)
 
 
 
@@ -394,7 +395,7 @@ def recording():
 def upload_file():
      path='clips'
      for filename in os.listdir(path):
-        if filename.endswith('.avi'):
+        if filename.endswith('.mp4'):
          upload_to_mega(path)
          with open(os.path.join(path,filename),'rb')as file:
             video_data = file.read()
@@ -420,28 +421,20 @@ def upload_file():
 
 
 from mimetypes import guess_type
+
 @app.route('/download/<string:video_name>')
 def download_video(video_name):
     path = 'clips'
-    file_path = os.path.join(path, video_name)
     try:
-        # check if the file exists
-        if os.path.isfile(file_path):
-            # check the file type
-            mimetype, encoding = guess_type(file_path)
-            if mimetype and mimetype.startswith('video/'):
-                # return the file as a download
-                return send_file(file_path, as_attachment=True, attachment_filename=video_name, mimetype=mimetype)
-            else:
-                # handle the error
-                return 'Invalid file type', 400
+        # Check if the file exists
+        if os.path.isfile(os.path.join(path, video_name)):
+            # Specify the correct MIME type and file extension
+            return render_template('pages/mainpage.html',directory=path, filename="video_name", as_attachment=True, mimetype='video/webm')
         else:
-            # handle the error
+            # Handle the error
             return 'File not found', 404
     except Exception as e:
         return str(e)
-
-
 
 
 

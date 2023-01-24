@@ -2,12 +2,20 @@
 {% block title %}main page{% endblock %} 
 {% block body %}
   <div class="accountsec" >
+    
     <div class="whole">
       <div class="acctt">
         <p class="title">Recordings</p>
       </div>
+      <div class="fixed-table-head">
+        <div>Video Name</div>
+        <div>Date</div>
+        <div>Download Link</div>
+      </div>
+
       <div class="table-container">
-        <table class ="recdiv1"   id="recid">
+        
+        <table class ="table table-hover recTable"   id="recid">
           <thead>
             <tr>
               <th>Video Name</th>
@@ -20,7 +28,7 @@
               <tr>
                 <td>{{ video.name }}</td>
                 <td>{{ video.date }}</td>
-                <td><a href="{{ url_for('download_video', video_name=video) }}"  download>Download Video</a>
+                <td><a class="btn download-btn" href="{{ url_for('download_video', video_name=video) }}"  download>Download Video</a>
                 </td>
               </tr>
             {%endfor%}
