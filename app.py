@@ -284,8 +284,6 @@ def tasks():
     global capture
     global rec
     notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
-    notify_len = len(notification)
-    
     email_addresses = [contact.email for contact in Contact.query.all()]
 
     print('[DEBUG] click:', request.form.get('click'))
@@ -312,12 +310,12 @@ def tasks():
                 #send_email(email_addresses)
                 print ("Message was sent")
                 upload_file()
-                notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
-                notify_len = len(notification)
+                # notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
+                # notify_len = len(notification)
                 
                 
 
-    return render_template('pages/mainpage.html',notification=notification , notify_len=notify_len)
+    return render_template('pages/mainpage.html',notification=notification)
 
 
 from flask_mail import Mail, Message
