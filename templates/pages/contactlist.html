@@ -36,7 +36,7 @@
             {% endif %}
             {% endwith %}
     <div class="fixed-table-head">
-        <div>ID</div>
+        
         <div>Name</div>
         <div>email</div>
         <div></div>
@@ -52,11 +52,11 @@
          </tr>          
                      {% for contact in data  %}
          <tr>
-             <td>{{contact.id}}</td>
+             
              <td>{{contact.name}}</td>
              <td>{{contact.email}}</td>
              <td>
-                 <a href="/delete/{{contact.id}}" class="text-danger" id="" onclick="return confirm('Are You Sure you want to Delete?')">  <i class="fa-solid fa-trash"></i></a>
+                 <a href="/delete/{{contact.id}}" class="text-danger" id="" onclick="return confirm('Are You Sure you want to Delete?')"><i class="fa-solid fa-trash"></i></a>
              </td>
          </tr>
           {% endfor%}
@@ -108,7 +108,7 @@
      
      <div class="setlist">
          <ul class="setword">
-             <i class="fa-regular fa-user" id="profileicon"></i> <a href="#">Profile </a>
+             <i class="fa-regular fa-user" id="profileicon"></i> <a href="{{ url_for('myprofile') }}">Profile </a>
          </ul>
     
      </div>

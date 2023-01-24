@@ -58,9 +58,11 @@
             <!-- Example single danger button -->
       <div class="btn-group">
         <li class="item">
-            <i  aria-hidden="true"></i> <span class="btn__badge pulse-button ">!</span> 
-        <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Warning!
+          {% if notify_len >0  %}
+            <i  aria-hidden="true"></i> <span class="btn__badge pulse-button ">{{notify_len}}</span> 
+          {% endif %}
+            <button type="button" class="btn alert-btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <i class="fa-solid fa-bell"></i>
         </button>
         
         <div class="dropdown-menu">

@@ -65,8 +65,8 @@ size = (frame_width, frame_height)
 fps = camera.get(cv2.CAP_PROP_FPS)
 
 #Creating the directory for the videos 
-os.makedirs('./clips', exist_ok=True)
-os.makedirs('./shots', exist_ok=True)
+os.makedirs('/static/clips', exist_ok=True)
+#os.makedirs('./shots', exist_ok=True)
 
 #csrf = CSRFProtect(app)
 
@@ -188,7 +188,9 @@ import mimetypes
 def mainpage():
   
   notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
-  return render_template('pages/mainpage.html',notification=notification)
+   
+  notify_len = len(notification)
+  return render_template('pages/mainpage.html',notification=notification ,notify_len=notify_len)
 
 #Getting the Camera frames
 
@@ -222,7 +224,12 @@ def gen_frames():
 
 
 
+@app.route('/videotest' )
 
+def videotest():
+    videos= Recording.query.all()
+    video_file = url_for('static', filename='clips/' + videos.name)
+    return video_file
 
 
 @app.route('/video_feed' )
@@ -242,7 +249,7 @@ class TimerClass(threading.Thread):
         while rec and not self.event.is_set():
             now = datetime.datetime.now()
             filename = "vid_{}.mp4".format(str(now).replace(":", ''))
-            path = os.path.sep.join(['clips', filename])
+            path = os.path.sep.join(['static/clips', filename])
             fourcc = cv2.VideoWriter_fourcc(*'vp80')
             out = cv2.VideoWriter(path, fourcc, fps, size)
 
@@ -277,6 +284,8 @@ def tasks():
     global capture
     global rec
     notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
+    notify_len = len(notification)
+    
     email_addresses = [contact.email for contact in Contact.query.all()]
 
     print('[DEBUG] click:', request.form.get('click'))
@@ -303,11 +312,12 @@ def tasks():
                 #send_email(email_addresses)
                 print ("Message was sent")
                 upload_file()
-         
+                notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
+                notify_len = len(notification)
                 
                 
 
-    return render_template('pages/mainpage.html',notification=notification)
+    return render_template('pages/mainpage.html',notification=notification , notify_len=notify_len)
 
 
 from flask_mail import Mail, Message
@@ -353,36 +363,24 @@ def send_email(email_addresses):
 
 
 
-from mega import Mega
-import os
-from os import listdir
-from os.path import isfile, join
 
 
-mega = Mega()
-mega._login_user('astorx.team@gmail.com','Sama3624200')
-
-def absoluteFilePaths(directory):
-    for dirpath, _, filenames in os.walk(directory):
-        for f in filenames:
-            yield os.path.abspath(os.path.join(dirpath, f))
-
-def upload_to_mega(directory):
-    folder = mega.find('vid')[0]
-    for file_path in absoluteFilePaths(directory):
-        mega.upload(file_path, folder)
 
 
 
 
 @app.route('/recording', methods=['GET', 'POST'])
 def recording():
-    path = 'clips'
+    v = Recording.query.all()
+    path = 'static/clips'
     files = os.listdir(path)
-    videos = [file for file in files if file.endswith('.mp4')]
-    notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
+    videos1 = [file for file in files if file.endswith('.mp4')]
+    videos= [  url_for('static', filename='clips/' + video_name)  for video_name in videos1] 
 
-    return render_template('pages/recording.html', videos=videos, notification=notification)
+   
+    notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
+    notify_len = len(notification)
+    return render_template('pages/recording.html', videos=videos, notification=notification ,notify_len=notify_len)
 
 
 
@@ -391,12 +389,14 @@ def recording():
 
 
 #save recording vieso into database
-@app.route('/upload/',methods=['GET','POST'])
+@app.route('/upload/', methods=['POST', 'GET'])
 def upload_file():
-     path='clips'
+     path='static/clips'
+     notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
+     notify_len = len(notification)
      for filename in os.listdir(path):
         if filename.endswith('.mp4'):
-         upload_to_mega(path)
+         
          with open(os.path.join(path,filename),'rb')as file:
             video_data = file.read()
             mimetype, _ = mimetypes.guess_type(filename)
@@ -404,9 +404,9 @@ def upload_file():
             print(upload)
             db.session.add(upload)
             db.session.commit()
-           
+  
         
-        return render_template('pages/mainpage.html')
+        return render_template('pages/mainpage.html',notify_len=notify_len)
 
 
 
@@ -424,12 +424,12 @@ from mimetypes import guess_type
 
 @app.route('/download/<string:video_name>')
 def download_video(video_name):
-    path = 'clips'
+    path = '/static/clips'
     try:
         # Check if the file exists
         if os.path.isfile(os.path.join(path, video_name)):
             # Specify the correct MIME type and file extension
-            return render_template('pages/mainpage.html',directory=path, filename="video_name", as_attachment=True, mimetype='video/webm')
+            return render_template('pages/mainpage.html',directory=path, filename="video_name", as_attachment=True, mimetype='video/mp4')
         else:
             # Handle the error
             return 'File not found', 404
@@ -453,8 +453,9 @@ def myprofile():
        email = user.email 
        phone = user.phone
        notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
+       notify_len=len(notification)
        return render_template('pages/myprofile.html', first_name=first_name , 
-      last_name=last_name , email=email , phone=phone ,notification=notification )
+      last_name=last_name , email=email , phone=phone ,notification=notification ,notify_len=notify_len)
     
    
 
@@ -469,8 +470,9 @@ def contactlist():
     user_id = session['logged_in_user_id']
     data = Contact.query.filter_by(user_id=user_id).all()
     print(f'data: {data}')
-
-    return render_template('pages/contactlist.html' , data = data)
+    notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
+    notify_len=len(notification)
+    return render_template('pages/contactlist.html' , data = data,notify_len=notify_len)
 
 
 
@@ -554,8 +556,9 @@ def cameramenu():
      user_id = session['logged_in_user_id']
      data = Camera_Table.query.filter_by(user_id=user_id).all()
      print(f'data: {data}')
-
-     return render_template('pages/cameramenu.html' , data = data)
+     notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
+     notify_len=len(notification)
+     return render_template('pages/cameramenu.html' , data = data,notify_len=notify_len)
 
 
 

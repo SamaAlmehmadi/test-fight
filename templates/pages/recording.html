@@ -26,9 +26,9 @@
           <tbody>
             {% for video in videos %}
               <tr>
-                <td>{{ video.name }}</td>
-                <td>{{ video.date }}</td>
-                <td><a class="btn download-btn" href="{{ url_for('download_video', video_name=video) }}"  download>Download Video</a>
+               <td> </td>
+               <td> </td>
+                <td><a class="btn download-btn" href="{{ video }}"  download>Download Video</a>
                 </td>
               </tr>
             {%endfor%}

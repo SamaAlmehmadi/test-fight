@@ -5,12 +5,15 @@
 <div class="accountsec">
     <div class="setinfo">
      <div class="acctt">
-         <p>Cameras </p>
-         <div class="addcontbtn">
-            <button type="button" id="btnct" class="btn btn-success float-right" 
-            data-toggle="modal" data-target="#mymodal">Add New Camera</button>
+        <div class="d-flex align-items-center justify-content-between">
+            <p class="title">Cameras </p>
+            <div class="addcontbtn">
+                <button type="button" id="btnct" class="btn download-btn fw-bold" 
+                data-toggle="modal" data-target="#mymodal"><i class="fa fa-camera"></i>&nbsp; Add Camera</button>
+            </div>
         </div>
-        </div>    
+                 
+    </div>    
          <!--Adding the flash messages -->
             {% with messages = get_flashed_messages() %}
             {% if messages %}
@@ -26,9 +29,17 @@
                      {% endif %}
                      {% endwith %}
 
+                     <div class="fixed-table-head">
+                        
+                        <div>Camera Name</div>
+                        <div>Camera IP</div>
+                        <div>Physical Location</div>
+                        <div>Action</div>
+                    </div>
+                    <div class="table-container">
     <!--Creating the table-->
-     <table class="table table-hover table-light" id="myTable" >
-         <tr>
+     <table class="table table-hover table-light text-center" id="myTable"  style="table-layout: fixed !important;border-radius: 10px !important;">
+         <tr class="d-none">
              <th>ID</th>
              <th>Camera Name</th>
              <th>Camera IP</th>
@@ -37,51 +48,48 @@
          </tr>          
                 {% for camera_list in data  %}
          <tr>
-             <td>{{camera_list.id}}</td>
+             
              <td>{{camera_list.camera_name}}</td>
              <td>{{camera_list.camera_ip}}</td>
              <td>{{camera_list.physical_location}}</td>
              <td>
-                 <a href="/delete_camera/{{camera_list.id}}" class="btn btn-danger btn-xs" id="deletebtn"onclick="return confirm('Are You Sure To Delete?')">Delete</a>
+                 <a href="/delete_camera/{{camera_list.id}}" class="text-danger" id=""onclick="return confirm('Are You Sure To Delete?')"><i class="fa-solid fa-trash"></i></a>
              </td>
          </tr>
         {% endfor%}
      </table>
-
+     </div>
  <!--Model Add camera-->
  <div id="mymodal" class="modal fade" role="dialog">
-     <div class="modal-dialog">
-         <div class="modal-content">
+     <div class="modal-dialog modal-dialog-centered">
+         <div class="modal-content" style="background-color: rgba(0,0,0,0.8);border-radius: 20px;">
              <div class="modal-header">
-                 <h4 class="modal-title">Add Camera</h4>
+                 <h3 class="modal-title text-light">Add Camera</h3>
              </div>
  
              <div class="modal-body">
                  <form action="{{url_for('camera_insert')}}" method="POST">
                      <div class="form-group">
-                         <label>Camera Name:</label>
+                         <label style="font-size: 20px;color: #eee;">Camera Name:</label>
                          <input type="text" class="form-control" name="camera" required="1">
                      </div>
 
                      <div class="form-group">
-                         <label>Camera IP:</label>
+                         <label style="font-size: 20px;color: #eee;">Camera IP:</label>
                          <input type="text" class="form-control" name="IP" required="1">
                      </div>
 
                      <div class="form-group">
-                        <label>Physical Location:</label>
+                        <label style="font-size: 20px;color: #eee;">Physical Location:</label>
                         <input type="text" class="form-control" name="Location" required="1">
                     </div>
  
-                     <div class="form-group">
-                         <button class="btn btn-primary" type="submit">Add Camera</button>
+                     <div style="margin-top: 3rem;margin-bottom: 1rem;">
+                         <button class="btn download-btn me-2 fw-bold" style="border-radius: 15px !important;" type="submit">Add Camera</button>
+                         <button type="button" class="btn btn-danger fw-bold" style="border-radius: 15px; width: 130px !important;font-size: 0.80rem !important" data-dismiss="modal">Close</button>
                      </div>
                  </form>
              </div>
- 
-             <div class="modal-footer">
-                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-             </div>  
          </div>
      </div>
  </div>
