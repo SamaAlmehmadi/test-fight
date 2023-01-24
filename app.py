@@ -315,7 +315,7 @@ def tasks():
                 
                 
 
-    return render_template('pages/mainpage.html',notification=notification)
+    return render_template('pages/mainpage.html')
 
 
 from flask_mail import Mail, Message
