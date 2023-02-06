@@ -6,6 +6,9 @@ import urllib.parse
 import threading
 import time
 import cv2 
+import numpy as np
+import imageio
+import tensorflow
 from flask import (
     Flask,
     render_template,
@@ -29,6 +32,7 @@ from flask_migrate import Migrate
 from flask_login import LoginManager, login_user, login_required, logout_user,current_user
 from io import BytesIO
 from werkzeug.utils import secure_filename
+from tensorflow import keras
 
 
 # global varaibles for the camera recording 
@@ -57,15 +61,25 @@ app.config['MAIL_USE_SSL'] = True
 
 #Creating the camera variable ,
 #camera = cv2.VideoCapture('rtsp://admin:abrar123@192.168.1.64:554/Streaming/Channels/101')
-camera=cv2.VideoCapture(0)# if we want to use the device web cam 
+#camera=cv2.VideoCapture(0)# if we want to use the device web cam 
 #creating the frame dimension for the camera 
-frame_width = int(camera.get(3))
-frame_height = int(camera.get(4))
-size = (frame_width, frame_height)
-fps = camera.get(cv2.CAP_PROP_FPS)
+# frame_width = int(camera.get(3))
+# frame_height = int(camera.get(4))
+# size = (frame_width, frame_height)
+# fps = camera.get(cv2.CAP_PROP_FPS)
+
+
+MAX_SEQ_LENGTH = 25
+NUM_FEATURES = 2048
+video_source =0
+resize = (320, 180)
+skip_frames = 1 
+class_vocab = ['fight', 'no_fight']
+best_model = "static/models/best_video_classifier.h5"
+model = keras.models.load_model(best_model)
 
 #Creating the directory for the videos 
-os.makedirs('/static/clips', exist_ok=True)
+os.makedirs('./static/clips', exist_ok=True)
 #os.makedirs('./shots', exist_ok=True)
 
 #csrf = CSRFProtect(app)
@@ -181,7 +195,19 @@ def login():
 
 
 
+
+
+
+
+
+
+
+
+
+
 import mimetypes
+
+
 
 @app.route('/mainpage', methods=['GET', 'POST'])
 @login_required
@@ -192,81 +218,67 @@ def mainpage():
   notify_len = len(notification)
   return render_template('pages/mainpage.html',notification=notification ,notify_len=notify_len)
 
+
+
 #Getting the Camera frames
 
-def gen_frames():
-    global capture
-    global img
-    
-    print('[DEBUG] gen_frames: start')
-
+def get_frame():
+    # Start video capture
+    cap = cv2.VideoCapture(video_source)
+    # predict()
+    # Continuously read and yield video frames
     while True:
-        success, img = camera.read()
-        
-        if not success and not rec:
-            break
-        
-        if capture:
-            capture = False
-
-            now = datetime.datetime.now()
-            filename = "shot_{}.png".format(str(now).replace(":",''))
-            path = os.path.sep.join(['shots', filename])
-
-            print('[DEBUG] capture:', path)
-
-            cv2.imwrite(path, img)
-
-        frame = cv2.imencode('.jpg', img)[1].tobytes()
-        
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+        ret, frame = cap.read()
+        if ret:
+            ret, jpeg = cv2.imencode('.jpg', frame)
+            if ret:
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n\r\n')
 
 
 
-@app.route('/videotest' )
 
-def videotest():
-    videos= Recording.query.all()
-    video_file = url_for('static', filename='clips/' + videos.name)
-    return video_file
+
+
+
+
 
 
 @app.route('/video_feed' )
 def video_feed():
-    return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(get_frame(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-#Thread Class for the camera recording 
-class TimerClass(threading.Thread):
+# #Thread Class for the camera recording 
+# class TimerClass(threading.Thread):
 
-    def __init__(self):
-        threading.Thread.__init__(self)
-        self.event = threading.Event()
+#     def __init__(self):
+#         threading.Thread.__init__(self)
+#         self.event = threading.Event()
 
-    def run(self):
-        seconds_10 = datetime.timedelta(seconds=10)
+#     def run(self):
+#         seconds_10 = datetime.timedelta(seconds=10)
         
-        while rec and not self.event.is_set():
-            now = datetime.datetime.now()
-            filename = "vid_{}.mp4".format(str(now).replace(":", ''))
-            path = os.path.sep.join(['static/clips', filename])
-            fourcc = cv2.VideoWriter_fourcc(*'vp80')
-            out = cv2.VideoWriter(path, fourcc, fps, size)
+#         while rec and not self.event.is_set():
+#             now = datetime.datetime.now()
+#             filename = "vid_{}.mp4".format(str(now).replace(":", ''))
+#             path = os.path.sep.join(['static/clips', filename])
+#             fourcc = cv2.VideoWriter_fourcc(*'vp80')
+#             out = cv2.VideoWriter(path, fourcc, fps, size)
 
-            end = now + seconds_10
+#             end = now + seconds_10
             
-            print('[DEBUG] end:', end)
+#             print('[DEBUG] end:', end)
             
-            while now < end and rec and not self.event.is_set():
-                if img is not None:  # `img` can be `numpy.array` so it can't check `if img:`
-                    out.write(img)
-                time.sleep(0.03)  # 1s / 25fps = 0.04  # it needs some time for code.
-                now = datetime.datetime.now()
+#             while now < end and rec and not self.event.is_set():
+#                 if img is not None:  # `img` can be `numpy.array` so it can't check `if img:`
+#                     out.write(img)
+#                 time.sleep(0.03)  # 1s / 25fps = 0.04  # it needs some time for code.
+#                 now = datetime.datetime.now()
         
-            out.release()
+#             out.release()
             
-    def stop (self):
-        self.event.set()
+#     def stop (self):
+#         self.event.set()
         
 
 
@@ -275,47 +287,138 @@ class TimerClass(threading.Thread):
 
 
 
+def prepare_single_video(frames):
+    frames = frames[None, ...]
+    frame_mask = np.zeros(shape=(1, MAX_SEQ_LENGTH,), dtype="bool")
+    frame_features = np.zeros(shape=(1, MAX_SEQ_LENGTH, NUM_FEATURES), dtype="float32")
 
+    for i, batch in enumerate(frames):
+        video_length = batch.shape[0]
+        length = min(MAX_SEQ_LENGTH, video_length)
+        for j in range(length):
+            frame_features[i, j, :] = feature_extractor.predict(batch[None, j, :],verbose=0)
+        frame_mask[i, :length] = 1  # 1 = not masked, 0 = masked
 
-
-
-@app.route('/requests', methods=['POST', 'GET'])
-def tasks():
-    global capture
-    global rec
-    notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
-    email_addresses = [contact.email for contact in Contact.query.all()]
-
-    print('[DEBUG] click:', request.form.get('click'))
-    print('[DEBUG] rec  :', request.form.get('rec'))
+    return frame_features, frame_mask
     
-    if request.method == 'POST':
-        if request.form.get('click') == 'Capture':
-            capture = True
-
-        if request.form.get('rec') == 'Start/Stop Recording':
-            rec = not rec
     
-            tmr = TimerClass()
+def build_feature_extractor():
+    feature_extractor = keras.applications.InceptionV3(
+        weights="imagenet",
+        include_top=False,
+        pooling="avg",
+        input_shape=(180, 320, 3),
+    )
+    preprocess_input = keras.applications.inception_v3.preprocess_input
+
+    inputs = keras.Input((180, 320, 3))
+    preprocessed = preprocess_input(inputs)
+
+    outputs = feature_extractor(preprocessed)
+    return keras.Model(inputs, outputs, name="feature_extractor")
+        
+    
+
+feature_extractor = build_feature_extractor()
+  
+def to_gif(images):
+    fn = 'assets/fight happen.gif'
+    converted_images = images.astype(np.uint8)
+    imageio.mimsave(fn, converted_images, fps=10)
+    
+
+
+
+
+def predict():
+    # Start video capture
+    #email_addresses = [contact.email for contact in Contact.query.all()]
+    print("test 12")
+    cap = cv2.VideoCapture(video_source)
+    
+    fight_happen = False
+    frames = []
+    try:
+        j = 0
+        while (cap.isOpened()):
+            ret, frame = cap.read()
+            if not ret:
+                break
+            j += 1
+            if j % skip_frames == 0:
+                frame = cv2.resize(frame, resize)
+                frames.append(frame)
+                
+                if len(frames) == MAX_SEQ_LENGTH:
+                    video = np.array(frames)
+                    feat, mask = prepare_single_video(video)
+                    probabilities = model.predict([feat, mask],verbose=0)[0]
+                    print('prediction made')
+                    frames = []
+                    if class_vocab[int(np.round(probabilities)[0])] == 'fight':
+                        fight_happen = True
+                        to_gif(video)
+                        os.system('assets/beep.mp3')
+                        print(f'fight scene detected with confidance {1 - probabilities[0]}')
+                        #send_email(email_addresses)
+                        
+
             
-            if rec:
-                print("start")
-                tmr.start()
+    except Exception as e:
+        print(e)
+        
+    finally:
+        cap.release()
+       
+        
+    if fight_happen:
+        return str("Fight Happen")
+
+
+
+
+
+
+
+
+
+# @app.route('/requests', methods=['POST', 'GET'])
+# def tasks():
+#     global capture
+#     global rec
+#     notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
+    
+
+#     print('[DEBUG] click:', request.form.get('click'))
+#     print('[DEBUG] rec  :', request.form.get('rec'))
+    
+#     if request.method == 'POST':
+#         if request.form.get('click') == 'Capture':
+#             capture = True
+
+#         if request.form.get('rec') == 'Start/Stop Recording':
+#             rec = not rec
+    
+#             tmr = TimerClass()
+            
+#             if rec:
+#                 print("start")
+#                 tmr.start()
               
-            else:
-                print("stop")
+#             else:
+#                 print("stop")
                 
-                tmr.stop()
+#                 tmr.stop()
                 
-                #send_email(email_addresses)
-                print ("Message was sent")
-                upload_file()
-                # notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
-                # notify_len = len(notification)
+#                 #send_email(email_addresses)
+#                 print ("Message was sent")
+#                 upload_file()
+#                 # notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
+#                 # notify_len = len(notification)
                 
                 
 
-    return render_template('pages/mainpage.html')
+#     return render_template('pages/mainpage.html')
 
 
 from flask_mail import Mail, Message
@@ -354,34 +457,16 @@ def send_email(email_addresses):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 @app.route('/recording', methods=['GET', 'POST'])
 def recording():
-    v = Recording.query.all()
     path = 'static/clips'
     files = os.listdir(path)
     videos1 = [file for file in files if file.endswith('.mp4')]
     videos= [  url_for('static', filename='clips/' + video_name)  for video_name in videos1] 
-
-   
     notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
     notify_len = len(notification)
-    return render_template('pages/recording.html', videos=videos, notification=notification ,notify_len=notify_len)
 
-
-
+    return render_template('pages/recording.html', videos=videos, notification=notification ,notify_len=notify_len )
 
 
 
@@ -394,7 +479,6 @@ def upload_file():
      notify_len = len(notification)
      for filename in os.listdir(path):
         if filename.endswith('.mp4'):
-         
          with open(os.path.join(path,filename),'rb')as file:
             video_data = file.read()
             mimetype, _ = mimetypes.guess_type(filename)
@@ -404,7 +488,9 @@ def upload_file():
             db.session.commit()
   
         
-        return render_template('pages/mainpage.html',notify_len=notify_len)
+        return render_template('pages/mainpage.html',notify_len=notify_len , filename=filename)
+
+
 
 
 
@@ -617,15 +703,24 @@ def delete_camera(id):
 
     
 
+
+
+
+    
+
 # ----------------------------------------------------------------------------#
 # Launch.
 # ----------------------------------------------------------------------------#
 
-
 # Default port:
+
+
+
 if __name__ == '__main__':
     
-    thread_cam = threading.Thread(target=gen_frames)
+    thread_cam = threading.Thread(target=get_frame)
     thread_cam.start()
+    thr = threading.Thread(target=predict)
+    thr.start()
     app.run(debug=True , threaded=True)
     

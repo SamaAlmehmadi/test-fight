@@ -26,8 +26,8 @@
           <tbody>
             {% for video in videos %}
               <tr>
-               <td> </td>
-               <td> </td>
+                <td>{{video[14:]}}</td>
+               <td>{{video[18:28]}}</td>
                 <td><a class="btn download-btn" href="{{ video }}"  download>Download Video</a>
                 </td>
               </tr>

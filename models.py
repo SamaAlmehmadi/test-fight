@@ -16,13 +16,16 @@ from flask_login import UserMixin
 db = SQLAlchemy()
 
 class Notification(db.Model):
+    __tablename__ = 'notification'
     id = db.Column(db.Integer, primary_key=True)
     massage = db.Column(db.String(400))
     date_time = db.Column(db.DateTime)
+    Camera_id=db.Column(db.Integer, db.ForeignKey('Camera_Table.id'))
 
-    def __init__(self,massage ,date_time):
+    def __init__(self,massage ,date_time , Camera_id):
         self.massage = massage
         self.date_time = date_time
+        self.Camera_id=Camera_id
        
 
 
