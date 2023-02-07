@@ -225,12 +225,13 @@ def mainpage():
 def get_frame():
     # Start video capture
     cap = cv2.VideoCapture(video_source)
-    # predict()
+    predict(cap)
     # Continuously read and yield video frames
     while True:
         ret, frame = cap.read()
         if ret:
             ret, jpeg = cv2.imencode('.jpg', frame)
+           
             if ret:
                 yield (b'--frame\r\n'
                        b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n\r\n')
@@ -330,11 +331,11 @@ def to_gif(images):
 
 
 
-def predict():
+def predict(cap):
     # Start video capture
     #email_addresses = [contact.email for contact in Contact.query.all()]
     print("test 12")
-    cap = cv2.VideoCapture(video_source)
+   
     
     fight_happen = False
     frames = []
