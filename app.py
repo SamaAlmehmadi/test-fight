@@ -224,8 +224,8 @@ def mainpage():
 
 def get_frame():
     # Start video capture
-    cap = cv2.VideoCapture(video_source)
-    predict(cap)
+    cap = cv2.VideoCapture("G:/sama-fight/assets/39.mp4")
+    predict()
     # Continuously read and yield video frames
     while True:
         ret, frame = cap.read()
@@ -235,10 +235,6 @@ def get_frame():
             if ret:
                 yield (b'--frame\r\n'
                        b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n\r\n')
-
-
-
-
 
 
 
