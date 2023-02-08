@@ -40,6 +40,8 @@ capture = False
 rec = False
 out = None
 img = None
+frames = []
+skip_frames = 4
 
 app = Flask(__name__)
 #app.jinja_env.filters['b64encode'] = b64encode
@@ -220,21 +222,10 @@ def mainpage():
 
 
 
-#Getting the Camera frames
 
-def get_frame():
-    # Start video capture
-    cap = cv2.VideoCapture("G:/sama-fight/assets/39.mp4")
-    predict()
-    # Continuously read and yield video frames
-    while True:
-        ret, frame = cap.read()
-        if ret:
-            ret, jpeg = cv2.imencode('.jpg', frame)
-           
-            if ret:
-                yield (b'--frame\r\n'
-                       b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n\r\n')
+
+
+
 
 
 
@@ -319,66 +310,80 @@ def build_feature_extractor():
 feature_extractor = build_feature_extractor()
   
 def to_gif(images):
-    fn = 'assets/fight happen.gif'
+    now = datetime.datetime.now()
+    fn = f'static/clips/fight happen_{now.strftime("%Y-%m-%d_%H-%M-%S")}.gif'
     converted_images = images.astype(np.uint8)
     imageio.mimsave(fn, converted_images, fps=10)
     
 
 
+#Getting the Camera frames
 
-
-def predict(cap):
+def get_frame():
     # Start video capture
-    #email_addresses = [contact.email for contact in Contact.query.all()]
-    print("test 12")
-   
-    
+    cap = cv2.VideoCapture(0)
+    j = 0
     fight_happen = False
     frames = []
-    try:
-        j = 0
-        while (cap.isOpened()):
-            ret, frame = cap.read()
-            if not ret:
-                break
+    print("in get frames funcaoin")
+    # Continuously read and yield video frames
+    while True:
+        ret, frame = cap.read()
+        #print("in while loo frames funcaoin")
+        if ret:
             j += 1
+            #print("in ret  frames funcaoin")
             if j % skip_frames == 0:
-                frame = cv2.resize(frame, resize)
-                frames.append(frame)
-                
-                if len(frames) == MAX_SEQ_LENGTH:
-                    video = np.array(frames)
-                    feat, mask = prepare_single_video(video)
-                    probabilities = model.predict([feat, mask],verbose=0)[0]
-                    print('prediction made')
-                    frames = []
-                    if class_vocab[int(np.round(probabilities)[0])] == 'fight':
-                        fight_happen = True
-                        to_gif(video)
-                        os.system('assets/beep.mp3')
-                        print(f'fight scene detected with confidance {1 - probabilities[0]}')
-                        #send_email(email_addresses)
-                        
+               # print("in skip frames  funcaoin")
+                frames.append(cv2.resize(frame, resize))
+                #print(len(frames))
+                if len(frames)==MAX_SEQ_LENGTH:
+                   # print("in MAX_SEQ_LENGTH frames  ")
+                    #print(np.array(frames).sum())
+                    print("test 12")
+                    fight_happen = False
+                    
+                    try:
+                        video = np.array(frames)
+                        feat, mask = prepare_single_video(video)
+                        probabilities = model.predict([feat, mask],verbose=0)[0]
+                        print('prediction made')
+                        font = cv2.FONT_HERSHEY_SIMPLEX
+                        if probabilities <0.5:
+                             print("fight")
+                             #cv2.putText(frame,"fight scene detected" ,  (50, 50),font, 1,(0, 255, 255),  2, cv2.LINE_4  )
+                        else:
+                             print("no fight")
+                            # cv2.putText(frame," no fight  detected" ,  (50, 50),font, 1,(0, 255, 255),  2, cv2.LINE_4  )
+                        #frames = []
+                        if class_vocab[int(np.round(probabilities)[0])] == 'fight':
+                            fight_happen = True
+                            
+                            to_gif(video)
+                            #os.system('static/videos1/beep.mp3')
+                            print(f'fight scene detected with confidance {1 - probabilities[0]}')
+                            print("email sent")
+                            
 
-            
-    except Exception as e:
-        print(e)
+                    except Exception as e:
+                        print(e)
+                    
+                    frames= []
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            if fight_happen: 
+                cv2.putText(frame,"fight scene detected" ,  (50, 50),font, 1,(0, 255, 255),  2, cv2.LINE_4  )
+            else: 
+                cv2.putText(frame," no fight  detected" ,  (50, 50),font, 1,(0, 255, 255),  2, cv2.LINE_4  )
+            ret, jpeg = cv2.imencode('.jpg', frame)
+
+
+           
+            if ret:
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n\r\n')
+
         
-    finally:
-        cap.release()
-       
         
-    if fight_happen:
-        return str("Fight Happen")
-
-
-
-
-
-
-
-
-
 # @app.route('/requests', methods=['POST', 'GET'])
 # def tasks():
 #     global capture
@@ -717,7 +722,6 @@ if __name__ == '__main__':
     
     thread_cam = threading.Thread(target=get_frame)
     thread_cam.start()
-    thr = threading.Thread(target=predict)
-    thr.start()
+    
     app.run(debug=True , threaded=True)
     
