@@ -18,7 +18,8 @@
         <table class ="table table-hover recTable"   id="recid">
           <thead>
             <tr>
-              <th>Video Name</th>
+              <th>Video Name </th>
+              
               <th>Date</th>
               <th>Download Link</th>
             </tr>
@@ -27,7 +28,9 @@
             {% for video in videos %}
               <tr>
                 <td>{{video[14:]}}</td>
-               <td>{{video[18:28]}}</td>
+                <td> camere Name: Hikvision </td>
+               <td>{{video[29:39]}}</td>
+               
                 <td><a class="btn download-btn" href="{{ video }}"  download>Download Video</a>
                 </td>
               </tr>

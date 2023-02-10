@@ -33,8 +33,21 @@ from flask_login import LoginManager, login_user, login_required, logout_user,cu
 from io import BytesIO
 from werkzeug.utils import secure_filename
 from tensorflow import keras
-
-
+from threading import Thread
+import winsound
+class CustomThread(Thread):
+    def _init_(self, group=None, target=None, name=None,
+                 args=(), kwargs={}, Verbose=None):
+        Thread._init_(self, group, target, name, args, kwargs)
+        self._return = None
+ 
+    def run(self):
+        if self._target is not None:
+            self._return = self._target(*self._args, **self._kwargs)
+             
+    def join(self, *args):
+        Thread.join(self, *args)
+        return self._return
 # global varaibles for the camera recording 
 capture = False
 rec = False
@@ -309,19 +322,124 @@ def build_feature_extractor():
 
 feature_extractor = build_feature_extractor()
   
-def to_gif(images):
+def to_gif(images, duration=5):
     now = datetime.datetime.now()
-    fn = f'static/clips/fight happen_{now.strftime("%Y-%m-%d_%H-%M-%S")}.gif'
+    path="static/clips/"
+    filename = f'fight_happen_{now.strftime("%Y-%m-%d_%H-%M-%S")}.gif'
+    ful_path = path +filename
     converted_images = images.astype(np.uint8)
-    imageio.mimsave(fn, converted_images, fps=10)
-    
+    fps = 10
+    num_frames = fps * duration
+    imageio.mimsave(ful_path, converted_images[:num_frames], fps=fps)
+    # mimetype, _ = mimetypes.guess_type(ful_path)
+    with app.app_context(): 
+        upload=Recording(name=filename, data=None, mimetype=".gif")
+         # print(upload.name)
+        db.session.add(upload)
+        db.session.commit()
 
+@app.route('/testing' , methods=['POST'])
+def testing(): 
+     upload=Recording(name="sama",data=None, mimetype="pri")
+     print(upload.name)
+     db.session.add(upload)
+     db.session.commit()
+     return "good"
+
+
+
+def upload_file():
+     path='static/clips'
+     notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
+     notify_len = len(notification)
+     for filename in os.listdir(path):
+        if filename.endswith('.gif'):
+         with open(os.path.join(path,filename),'rb')as file:
+            video_data = file.read()
+            mimetype, _ = mimetypes.guess_type(filename)
+            upload=Recording(name=filename, data=video_data, mimetype=mimetype)
+            print(upload)
+            db.session.add(upload)
+            db.session.commit()
+  
+        
+        return render_template('pages/mainpage.html',notify_len=notify_len , filename=filename)
 
 #Getting the Camera frames
 
+def send_email():
+    with app.app_context():
+        email_addresses = [contact.email for contact in Contact.query.all()]
+        now = datetime.datetime.now()
+        camera_details=Camera_Table.query.first()
+        # create the message with the email addresses as recipients
+        msg = Message('This is an alert !', sender='astorx.team@gmail.com', recipients=email_addresses)
+        msg.body = "Warring, a fight has occured  Camera Name: {name} , Location: {location} , Time: {time}" \
+        .format(name=camera_details.camera_name , location=camera_details.physical_location, time=(str(now)))
+        mail.send(msg)
+        current_time = datetime.datetime.now().strftime("%I:%M %p")
+        # Create a new Notification object with the message and date/time
+        notification = Notification(massage='Fight happened at '+current_time, date_time=datetime.datetime.now())
+        db.session.add(notification)
+        db.session.commit()
+
+
+def open_camera(value): 
+    #cap = cv2.VideoCapture(0)
+    #
+ 
+    return cv2.VideoCapture(value)
+    
+
+
+def colect_frames(cap): 
+   if  not cap.isOpened(): 
+        return 
+   frames = []
+   j = 0
+   while len(frames )<=MAX_SEQ_LENGTH:
+        ret, frame = cap.read()
+        if ret: 
+            j += 1
+            if j % skip_frames == 0:
+                frames.append(cv2.resize(frame, resize))
+        return 
+   video = np.array(frames)
+   feat, mask = prepare_single_video(video)
+   ret, jpeg = cv2.imencode('.jpg', frame)      
+   if ret:
+        yield (b'--frame\r\n'
+                b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n\r\n')
+   return feat, mask,video
+
+def predict_fight(feat , mask,video ):
+    probabilities = model.predict([feat, mask],verbose=0)[0]
+    print('prediction made')
+    if probabilities <0.5:
+            print("fight")
+            #cv2.putText(frame,"fight scene detected" ,  (50, 50),font, 1,(0, 255, 255),  2, cv2.LINE_4  )
+    else:
+            print("no fight")
+        # cv2.putText(frame," no fight  detected" ,  (50, 50),font, 1,(0, 255, 255),  2, cv2.LINE_4  )
+    #frames = []
+    if class_vocab[int(np.round(probabilities)[0])] == 'fight':
+        fight_happen = True
+        
+        to_gif(video)
+        #os.system('static/videos1/beep.mp3')
+        print(f'fight scene detected with confidance {1 - probabilities[0]}')
+        #print("email sent")
+                            
+
+
+ 
+
+    
+
+from playsound import playsound
 def get_frame():
     # Start video capture
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture("static/videos1/no_fi4.mp4")
     j = 0
     fight_happen = False
     frames = []
@@ -340,7 +458,7 @@ def get_frame():
                 if len(frames)==MAX_SEQ_LENGTH:
                    # print("in MAX_SEQ_LENGTH frames  ")
                     #print(np.array(frames).sum())
-                    print("test 12")
+                   
                     fight_happen = False
                     
                     try:
@@ -362,7 +480,13 @@ def get_frame():
                             to_gif(video)
                             #os.system('static/videos1/beep.mp3')
                             print(f'fight scene detected with confidance {1 - probabilities[0]}')
+                            #send_email()
                             print("email sent")
+                            #playsound(" G:/sama-fight/static/videos1/beep.mp3")
+                            #os.system('start G:/sama-fight/static/videos1/beep.mp3')
+                            #winsound.PlaySound("static/videos1/beep.mp3" ,winsound.SND_FILENAME )
+                             
+                            
                             
 
                     except Exception as e:
@@ -383,7 +507,12 @@ def get_frame():
                        b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n\r\n')
 
         
-        
+
+    
+
+    
+
+
 # @app.route('/requests', methods=['POST', 'GET'])
 # def tasks():
 #     global capture
@@ -428,19 +557,6 @@ mail = Mail(app)
 
 
 
-def send_email(email_addresses):
-    now = datetime.datetime.now()
-    camera_details=Camera_Table.query.first()
-    # create the message with the email addresses as recipients
-    msg = Message('This is an alert !', sender='astorx.team@gmail.com', recipients=email_addresses)
-    msg.body = "Warring, a fight has occured  Camera Name: {name} , Location: {location} , Time: {time}" \
-    .format(name=camera_details.camera_name , location=camera_details.physical_location, time=(str(now)))
-    mail.send(msg)
-    current_time = datetime.datetime.now().strftime("%I:%M %p")
-    # Create a new Notification object with the message and date/time
-    notification = Notification(massage='Fight happened at '+current_time, date_time=datetime.datetime.now())
-    db.session.add(notification)
-    db.session.commit()
 
 
 
@@ -463,7 +579,7 @@ def send_email(email_addresses):
 def recording():
     path = 'static/clips'
     files = os.listdir(path)
-    videos1 = [file for file in files if file.endswith('.mp4')]
+    videos1 = [file for file in files if file.endswith('.gif')]
     videos= [  url_for('static', filename='clips/' + video_name)  for video_name in videos1] 
     notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
     notify_len = len(notification)
@@ -474,13 +590,13 @@ def recording():
 
 
 #save recording vieso into database
-@app.route('/upload/', methods=['POST', 'GET'])
+#@app.route('/upload/', methods=['POST', 'GET'])
 def upload_file():
      path='static/clips'
      notification = Notification.query.order_by(desc(Notification.date_time)).limit(5).all()
      notify_len = len(notification)
      for filename in os.listdir(path):
-        if filename.endswith('.mp4'):
+        if filename.endswith('.gif'):
          with open(os.path.join(path,filename),'rb')as file:
             video_data = file.read()
             mimetype, _ = mimetypes.guess_type(filename)
@@ -720,8 +836,16 @@ def delete_camera(id):
 
 if __name__ == '__main__':
     
-    thread_cam = threading.Thread(target=get_frame)
-    thread_cam.start()
-    
+    # thread_cam = threading.Thread(target=get_frame)
+    # thread_cam.start()
+    camera_thr = CustomThread(target= open_camera , args=(0,)) 
+    camera_thr.start()
+
+    colect_frame_thr= CustomThread(target=colect_frames,args=(camera_thr.join()))
+    colect_frame_thr.start()
+     
+    predict_fi_thr = CustomThread(target=predict_fight,args=(colect_frame_thr.join()) )
+    colect_frame_thr.start()
+
     app.run(debug=True , threaded=True)
     
